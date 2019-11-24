@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/bleDeviceListMainLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/ble_device_list_background">
+
+    <ImageView
+        android:id="@+id/img_type"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/dev_thingy" />
+
+    <ImageView
+        android:id="@+id/ledState"
+        android:layout_width="30dp"
+        android:layout_height="17dp"
+        android:layout_below="@id/ledStateLabel"
+        android:layout_alignLeft="@id/ledStateLabel"
+        android:background="@drawable/led_status_box"
+        android:padding="2dp"
+        android:textAppearance="@style/FontBleDeviceField" />
+
+    <TextView
+        android:id="@+id/type"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
+        android:padding="2dp"
+        android:text=""
+        android:textSize="12dp"
+        android:textStyle="italic" />
+
+    <TextView
+        android:id="@+id/nameLabel"
+        android:layout_width="110dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@id/img_type"
+        android:padding="2dp"
+        android:text="Name"
+        android:textAppearance="@style/FontBleDeviceLabel" />
+
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/nameLabel"
+        android:layout_alignLeft="@id/nameLabel"
+        android:padding="2dp"
+        android:text="MyThingy"
+        android:textAppearance="@style/FontBleDeviceField" />
+
+    <TextView
+        android:id="@+id/connHandleLabel"
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/nameLabel"
+        android:padding="2dp"
+        android:text="ID"
+        android:textAppearance="@style/FontBleDeviceLabel" />
+
+    <TextView
+        android:id="@+id/connHandle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/connHandleLabel"
+        android:layout_alignLeft="@id/connHandleLabel"
+        android:padding="2dp"
+        android:text="0"
+        android:textAppearance="@style/FontBleDeviceField" />
+
+    <TextView
+        android:id="@+id/btnStateLabel"
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/connHandleLabel"
+        android:padding="2dp"
+        android:text="Button"
+        android:textAppearance="@style/FontBleDeviceLabel" />
+
+    <TextView
+        android:id="@+id/btnState"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btnStateLabel"
+        android:layout_alignLeft="@id/btnStateLabel"
+        android:padding="2dp"
+        android:text="Off"
+        android:textAppearance="@style/FontBleDeviceField" />
+
+    <TextView
+        android:id="@+id/ledStateLabel"
+        android:layout_width="40dp"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/btnStateLabel"
+        android:padding="2dp"
+        android:text="LED"
+        android:textAppearance="@style/FontBleDeviceLabel" />
+
+    <TextView
+        android:id="@+id/phyStateLabel"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/ledStateLabel"
+        android:padding="2dp"
+        android:text="Phy"
+        android:textAppearance="@style/FontBleDeviceLabel" />
+
+    <TextView
+        android:id="@+id/phyState"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/phyStateLabel"
+        android:layout_alignLeft="@id/phyStateLabel"
+        android:padding="2dp"
+        android:text="1Mbps"
+        android:textAppearance="@style/FontBleDeviceField" />
+
+    <TextView
+        android:id="@+id/rssiStateLabel"
+        android:layout_width="40dp"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/phyStateLabel"
+        android:padding="2dp"
+        android:text="RSSI"
+        android:textAppearance="@style/FontBleDeviceLabel" />
+
+    <TextView
+        android:id="@+id/rssiState"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/rssiStateLabel"
+        android:layout_alignLeft="@id/rssiStateLabel"
+        android:padding="2dp"
+        android:text="-"
+        android:textAppearance="@style/FontBleDeviceField" />
+</RelativeLayout>
