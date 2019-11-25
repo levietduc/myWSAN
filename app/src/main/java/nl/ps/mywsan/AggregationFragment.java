@@ -24,7 +24,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-public class AboutFragment extends Fragment {
+public class AggregationFragment extends Fragment {
     public static final String TAG = "AboutFragment";
     private static final int UART_PROFILE_READY = 10;
     private static final int UART_PROFILE_CONNECTED = 20;
@@ -200,7 +200,7 @@ public class AboutFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup viewGroup, Bundle savedInstanceState) {
 
 
-        View view = inflater.inflate(R.layout.aboutlayout, viewGroup, false);
+        View view = inflater.inflate(R.layout.aggregationlayout, viewGroup, false);
 
 //        deviceInfo = view.findViewById(R.id.deviceAddress);
 //        deviceType = view.findViewById(R.id.deviceType);

@@ -21,14 +21,14 @@ public class TabsAdapter extends FragmentStatePagerAdapter {
     public Fragment getItem(int position) {
         switch (position) {
             case 0:
-                HomeFragment home = new HomeFragment();
-                return home;
+                ConnectionFragment connection = new ConnectionFragment();
+                return connection;
             case 1:
-                AboutFragment about = new AboutFragment();
-                return about;
+                AggregationFragment aggregation = new AggregationFragment();
+                return aggregation;
             case 2:
-                ContactFragment contact = new ContactFragment();
-                return contact;
+                AnalyticsFragment analytics = new AnalyticsFragment();
+                return analytics;
             default:
                 return null;
         }

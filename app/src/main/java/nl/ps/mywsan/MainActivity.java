@@ -58,13 +58,13 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
         mConProgDialog.setTitle("Connecting...");
         mConProgDialog.setCancelable(false);
 
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.mainlayout);
         Toolbar toolbar = findViewById(R.id.tool_bar);
         setSupportActionBar(toolbar);
         TabLayout tabLayout = findViewById(R.id.tab_layout);
-        tabLayout.addTab(tabLayout.newTab().setText("Home"));
-        tabLayout.addTab(tabLayout.newTab().setText("About"));
-        tabLayout.addTab(tabLayout.newTab().setText("Contact"));
+        tabLayout.addTab(tabLayout.newTab().setText("Connection"));
+        tabLayout.addTab(tabLayout.newTab().setText("Aggregation"));
+        tabLayout.addTab(tabLayout.newTab().setText("Analytics"));
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
         final ViewPager viewPager = findViewById(R.id.view_pager);
         TabsAdapter tabsAdapter = new TabsAdapter(getSupportFragmentManager(), tabLayout.getTabCount());

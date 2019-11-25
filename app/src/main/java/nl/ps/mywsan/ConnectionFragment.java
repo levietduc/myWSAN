@@ -32,7 +32,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.viewpager.widget.ViewPager;
 
-public class HomeFragment extends Fragment {
+public class ConnectionFragment extends Fragment {
 
 
     public static final String TAG = "HomeFragment";
@@ -115,7 +115,7 @@ public class HomeFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup viewGroup, Bundle savedInstanceState) {
         mHandler = new Handler();
-        view = inflater.inflate(R.layout.homelayout, viewGroup, false);
+        view = inflater.inflate(R.layout.connectionlayout, viewGroup, false);
 
         cancelButton = view.findViewById(R.id.btn_cancel);
         cancelButton.setOnClickListener(new View.OnClickListener() {

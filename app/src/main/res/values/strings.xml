@@ -9,4 +9,26 @@
     <string name="cancel">Cancel</string>
     <string name="paired">paired</string>
     <string name="ble_not_supported">Bluetooth Low Energy not supported</string>
+
+
+    <string name="connect">Connect</string>
+    <string name="disconnect">Disconnect</string>
+
+    <!-- String for data analytics   -->
+    <string name="temperature_graph">Temperature (\u2103)</string>
+    <string name="pressure_graph">Pressure (hPa)</string>
+    <string name="humidity_graph">Humidity (%)</string>
+
+    <string name="temperature_title">Temperature</string>
+    <string name="pressure_title">Pressure</string>
+    <string name="humidity_title">Humidity</string>
+    <string name="air_quality_title">Air quality</string>
+    <string name="eco2_title">Effective CO2</string>
+    <string name="tvoc_title">Total volatile organic compound</string>
+    <string name="environment_current_conditions_title">Current Conditions</string>
+    <string name="color_intensity_title">Color intensity</string>
+    <string name="environment_settings_cardview">ENVIRONMENT SETTINGS</string>
+    <string name="analytics_settings_cardview">Analytics Settings</string>
+
+    <string name="time">Time</string>
 </resources>
