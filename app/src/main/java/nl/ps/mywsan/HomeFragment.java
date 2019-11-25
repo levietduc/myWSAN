@@ -1,12 +1,10 @@
 package nl.ps.mywsan;
 
 
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
-import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -41,6 +39,9 @@ public class HomeFragment extends Fragment {
     private static final long SCAN_PERIOD = 10000; //10 seconds
     List<BluetoothDevice> deviceList;
     Map<String, Integer> devRssiValues;
+
+    private Button cancelButton;
+
     ListView mBleDeviceListView;
     private deviceViewModel viewModel;
     private ListView lv;
@@ -58,39 +59,34 @@ public class HomeFragment extends Fragment {
 
                 @Override
                 public void onLeScan(final BluetoothDevice device, final int rssi, final byte[] scanRecord) {
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
+                    if (isAdded()) {
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
 
-                            getActivity().runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    addDevice(device, rssi, scanRecord);
-                                }
-                            });
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        addDevice(device, rssi, scanRecord);
+                                    }
+                                });
 
-                        }
-                    });
+                            }
+                        });
+                    }
                 }
             };
-    private AdapterView.OnItemClickListener mDeviceClickListener = new AdapterView.OnItemClickListener() {
+//    private AdapterView.OnItemClickListener mDeviceClickListener = new AdapterView.OnItemClickListener() {
+//
+//        @Override
+//        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//            BluetoothDevice device = deviceList.get(position);
+//            mBluetoothAdapter.stopLeScan(mLeScanCallback);
+//            ViewPager mviewPager = getActivity().findViewById(R.id.view_pager);
+//            mviewPager.setCurrentItem(1);
+//        }
+//    };
 
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            BluetoothDevice device = deviceList.get(position);
-            mBluetoothAdapter.stopLeScan(mLeScanCallback);
-
-            Bundle b = new Bundle();
-            b.putString(BluetoothDevice.EXTRA_DEVICE, deviceList.get(position).getAddress());
-
-            Intent result = new Intent();
-            result.putExtras(b);
-            getActivity().setResult(Activity.RESULT_OK, result);
-//            getActivity().finish();
-            ViewPager mviewPager = getActivity().findViewById(R.id.view_pager);
-            mviewPager.setCurrentItem(1);
-        }
-    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -121,30 +117,20 @@ public class HomeFragment extends Fragment {
         mHandler = new Handler();
         view = inflater.inflate(R.layout.homelayout, viewGroup, false);
 
-        Button cancelButton = view.findViewById(R.id.btn_cancel);
+        cancelButton = view.findViewById(R.id.btn_cancel);
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mScanning == false) {
                     scanLeDevice(true);
-//                    deviceList = new ArrayList<BluetoothDevice>();
-//                    deviceAdapter = new DeviceAdapter(getContext(), deviceList);
-//                    lv = (ListView) view.findViewById(R.id.new_devices);
-//                    lv.setAdapter(deviceAdapter);
-//                    lv.deferNotifyDataSetChanged();
                     deviceList.clear();
                     deviceAdapter.notifyDataSetChanged();
-//                    mEmptyList.setVisibility(View.VISIBLE);
                 }
-//                else getActivity().finish();
                 else {
                     scanLeDevice(false);
                 }
             }
         });
-
-
-//        scanLeDevice(false);
 
         mEmptyList = view.findViewById(R.id.empty);
 

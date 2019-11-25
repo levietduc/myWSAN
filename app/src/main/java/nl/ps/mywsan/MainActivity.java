@@ -6,13 +6,13 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.google.android.material.tabs.TabLayout;
@@ -28,7 +28,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.viewpager.widget.ViewPager;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener {
     public static final String TAG = "MainActivity";
     private static final int REQUEST_SELECT_DEVICE = 1;
     private static final int REQUEST_ENABLE_BT = 2;
@@ -39,9 +39,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     private BluetoothAdapter mBtAdapter = null;
-    private LedButtonService mService = null;
-    private BluetoothDevice mDevice = null;
-    private BleLinkManager mBleLinkManager;
     private ProgressDialog mConProgDialog;
 
 
@@ -60,11 +57,6 @@ public class MainActivity extends AppCompatActivity {
         mConProgDialog = new ProgressDialog(this);
         mConProgDialog.setTitle("Connecting...");
         mConProgDialog.setCancelable(false);
-
-//        if (!mBtAdapter.isEnabled()) {
-//            Intent enableBluetoothIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-//            startActivityForResult(enableBluetoothIntent, REQUEST_ENABLE_BT);
-//        }
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.tool_bar);
@@ -100,18 +92,7 @@ public class MainActivity extends AppCompatActivity {
             fuckMarshMallow();
         }
 
-//        mBleLinkManager = new BleLinkManager(getApplicationContext());
-//        mBleDeviceListView = (ListView)findViewById(R.id.new_devices);
-//        mBleDeviceListView.setAdapter(mBleLinkManager.getListAdapter());
-//        mBleDeviceListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-//        mBleDeviceListView.setItemsCanFocus(false);
-//        // Change tab when device is selected
-//        mBleDeviceListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-//                mBleLinkManager.itemClicked(i);
-//            }
-//        });
+
     }
 
     @Override
@@ -149,19 +130,6 @@ public class MainActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
-//            case REQUEST_SELECT_DEVICE:
-//                //When the DeviceListActivity return, with the selected device address
-//                if (resultCode == Activity.RESULT_OK && data != null) {
-//                    String deviceAddress = data.getStringExtra(BluetoothDevice.EXTRA_DEVICE);
-//                    mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
-//
-//                    Log.d(TAG, "... onActivityResultdevice.address==" + mDevice + "mserviceValue" + mService);
-//                    //((TextView) findViewById(R.id.deviceName)).setText(mDevice.getName()+ " - connecting");
-//                    mService.connect(deviceAddress);
-//
-//                    mConProgDialog.show();
-//                }
-//                break;
 
             case REQUEST_ENABLE_BT:
                 // When the request to enable Bluetooth returns
@@ -182,6 +150,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onCheckedChanged(RadioGroup group, int checkedId) {
+
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
@@ -211,23 +183,6 @@ public class MainActivity extends AppCompatActivity {
                             .show();
 
                     finish();
-
-
-//                    final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-//                    builder.setTitle("This app needs location access");
-//                    builder.setMessage("Please grant location access so this app can detect beacons in the background.");
-//                    builder.setPositiveButton(android.R.string.ok, null);
-//                    builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-//
-//                            @TargetApi(23)
-//                            @Override
-//                            public void onDismiss(DialogInterface dialog) {
-//                                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-//                                        REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS);
-//                            }
-//
-//                        });
-//                    builder.show();
                 }
             }
             break;
