@@ -36,6 +36,9 @@ public class AggregationFragment extends Fragment {
     private BluetoothDevice mDevice = null;
     private BleLinkManager mBleLinkManager;
 
+    ListView mNodeListView;
+    // remote node
+    private NodeLinkManager mNodeLinkManager;
     //UART service connected/disconnected
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder rawBinder) {
@@ -43,6 +46,8 @@ public class AggregationFragment extends Fragment {
             mService = ((LedButtonService.LocalBinder) rawBinder).getService();
             Log.d(TAG, "onServiceConnected mService= " + mService);
             mBleLinkManager.setOutgoingService(mService);
+            // remote node
+            mNodeLinkManager.setOutgoingService(mService);
             if (!mService.initialize()) {
                 Log.e(TAG, "Unable to initialize Bluetooth");
 //                finish();
@@ -51,10 +56,13 @@ public class AggregationFragment extends Fragment {
 
         public void onServiceDisconnected(ComponentName classname) {
             mBleLinkManager.setOutgoingService(null);
+            mNodeLinkManager.setOutgoingService(null);
             mService = null;
         }
     };
     ListView mBleDeviceListView;
+    private Boolean isRemoteNode = false;
+
     private BluetoothAdapter mBluetoothAdapter;
     private Button btnConnectDisconnect;
     private TextView mStatusText;
@@ -103,6 +111,8 @@ public class AggregationFragment extends Fragment {
                         mService.close();
                         mConProgDialog.hide();
                         mBleLinkManager.clearBleDevices();
+
+                        mNodeLinkManager.clearNodeDevices();
                     }
                 });
             }
@@ -119,7 +129,13 @@ public class AggregationFragment extends Fragment {
                 getActivity().runOnUiThread(new Runnable() {
                     public void run() {
                         try {
-                            mBleLinkManager.processBlePacket(txValue);
+                            if ((int) txValue[0] >= 4) {
+                                isRemoteNode = true;
+                                mNodeLinkManager.processNodePacket(txValue);
+                            } else {
+                                mBleLinkManager.processBlePacket(txValue);
+                                isRemoteNode = false;
+                            }
                         } catch (Exception e) {
                             Log.e(TAG, e.toString());
                         }
@@ -175,14 +191,26 @@ public class AggregationFragment extends Fragment {
 
 //                    mConProgDialog.show();
         });
-
+//        if (isRemoteNode){
+        mNodeLinkManager = new NodeLinkManager(getActivity().getApplicationContext());
+        Log.d(TAG, "creating mNodeLinkManager");
+//        }else {
         mBleLinkManager = new BleLinkManager(getActivity().getApplicationContext());
-        Log.d(TAG, "onCreate");
+        Log.d(TAG, "creating mBleLinkManager");
+//        }
+
 
         mBleLinkManager.setBleLinkListener(new BleLinkManager.BleLinkListener() {
             @Override
             public void onListChanged() {
                 mStatusText.setText("Connected Devices: " + mBleLinkManager.getNumberOfLinks());
+            }
+        });
+
+        mNodeLinkManager.setNodeLinkListener(new NodeLinkManager.NodeLinkListener() {
+            @Override
+            public void onListChanged() {
+                mStatusText.setText("Connected Devices: " + mNodeLinkManager.getNumberOfLinks());
             }
         });
     }
@@ -215,6 +243,19 @@ public class AggregationFragment extends Fragment {
                 mBleLinkManager.itemClicked(i);
             }
         });
+
+        mNodeListView = view.findViewById(R.id.listViewNode);
+        mNodeListView = view.findViewById(R.id.listViewNode);
+        mNodeListView.setAdapter(mNodeLinkManager.getListAdapter());
+        mNodeListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+        mNodeListView.setItemsCanFocus(false);
+        mNodeListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                mNodeLinkManager.itemClicked(i);
+            }
+        });
+
         mStatusText = view.findViewById(R.id.textViewStatus);
 
         btnConnectDisconnect = view.findViewById(R.id.btn_connect);
@@ -244,6 +285,7 @@ public class AggregationFragment extends Fragment {
                         //Disconnect button pressed
                         if (mDevice != null) {
                             mBleLinkManager.disconnectCentral();
+                            mNodeLinkManager.disconnectCentral();
                             //mService.disconnect();
                         }
                     }

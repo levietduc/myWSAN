@@ -15,6 +15,12 @@
             android:layout_height="wrap_content"
             android:text="@android:string/cancel" />
 
+        <TextView
+            android:id="@+id/empty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/scanning" />
+
         <ListView
             android:id="@+id/new_devices"
             android:layout_width="fill_parent"
@@ -44,12 +50,6 @@
                 android:textColor="#fff"
                 android:textSize="15dip" />
         </RelativeLayout>
-
-        <TextView
-            android:id="@+id/empty"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/scanning" />
 
     </LinearLayout>
 </LinearLayout>

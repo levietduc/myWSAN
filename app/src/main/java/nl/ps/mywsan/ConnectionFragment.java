@@ -42,7 +42,7 @@ public class ConnectionFragment extends Fragment {
 
     private Button cancelButton;
 
-    ListView mBleDeviceListView;
+    ListView mNodeListView;
     private deviceViewModel viewModel;
     private ListView lv;
     private BluetoothAdapter mBluetoothAdapter;
@@ -53,7 +53,7 @@ public class ConnectionFragment extends Fragment {
     private DeviceAdapter deviceAdapter;
     private ServiceConnection onService = null;
     private View view;
-    private BleLinkManager mBleLinkManager;
+    private NodeLinkManager mBleLinkManager;
     private BluetoothAdapter.LeScanCallback mLeScanCallback =
             new BluetoothAdapter.LeScanCallback() {
 
@@ -138,12 +138,12 @@ public class ConnectionFragment extends Fragment {
 
 
 //        mBleLinkManager = new BleLinkManager(getContext());
-//        mBleDeviceListView = (ListView)view.findViewById(R.id.new_devices);
-//        mBleDeviceListView.setAdapter(mBleLinkManager.getListAdapter());
-//        mBleDeviceListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-//        mBleDeviceListView.setItemsCanFocus(false);
+//        mNodeListView = (ListView)view.findViewById(R.id.new_devices);
+//        mNodeListView.setAdapter(mBleLinkManager.getListAdapter());
+//        mNodeListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+//        mNodeListView.setItemsCanFocus(false);
 //        // Change tab when device is selected
-//        mBleDeviceListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//        mNodeListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 //            @Override
 //            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 //                mBleLinkManager.itemClicked(i);
@@ -324,7 +324,7 @@ public class ConnectionFragment extends Fragment {
 
             BluetoothDevice device = devices.get(position);
             final TextView tvadd = vg.findViewById(R.id.address);
-            final TextView tvname = vg.findViewById(R.id.name);
+            final TextView tvname = vg.findViewById(R.id.txtName);
             final TextView tvpaired = vg.findViewById(R.id.paired);
             final TextView tvrssi = vg.findViewById(R.id.rssi);
 

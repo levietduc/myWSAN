@@ -45,7 +45,7 @@ public class AnalyticsFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup viewGroup, Bundle savedInstanceState) {
-        final View rootView = inflater.inflate(R.layout.analyticslayout, viewGroup, false);
+        final View rootView = inflater.inflate(R.layout.fragment_environment, viewGroup, false);
         final Toolbar toolbarEnvironment = rootView.findViewById(R.id.environment_toolbar);
 
         mTemperatureView = rootView.findViewById(R.id.temperature);
@@ -54,7 +54,7 @@ public class AnalyticsFragment extends Fragment {
         mCarbon = rootView.findViewById(R.id.carbon);
         mTvoc = rootView.findViewById(R.id.tvoc);
         mColorView = rootView.findViewById(R.id.color);
-        btn_Settings = rootView.findViewById(R.id.btn_analytics_setting);
+        btn_Settings = rootView.findViewById(R.id.weather_settings);
 
 
         mLineChartTemperature = rootView.findViewById(R.id.line_chart_temperature);

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/nodeListMainLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/ble_device_list_background">
+
+    <ImageView
+        android:id="@+id/img_type"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/dev_thingy" />
+
+    <TextView
+        android:id="@+id/txtHopCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/labelHopCount"
+        android:layout_alignLeft="@id/labelHopCount"
+        android:padding="2dp"
+        android:text="0"
+        android:textAppearance="@style/FontBleDeviceField" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
+        android:padding="2dp"
+        android:text=""
+        android:textSize="12dp"
+        android:textStyle="italic" />
+
+    <TextView
+        android:id="@+id/labelName"
+        android:layout_width="70dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@id/img_type"
+        android:padding="2dp"
+        android:text="Name"
+        android:textAppearance="@style/FontBleDeviceLabel" />
+
+    <TextView
+        android:id="@+id/txtName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/labelName"
+        android:layout_alignLeft="@id/labelName"
+        android:padding="2dp"
+        android:text="MyThingy"
+        android:textAppearance="@style/FontBleDeviceField" />
+
+    <TextView
+        android:id="@+id/labelCluster"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/labelName"
+        android:padding="2dp"
+        android:text="Cluster"
+        android:textAppearance="@style/FontBleDeviceLabel" />
+
+    <TextView
+        android:id="@+id/txtClusterID"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/labelCluster"
+        android:layout_alignLeft="@id/labelCluster"
+        android:padding="2dp"
+        android:text="0"
+        android:textAppearance="@style/FontBleDeviceField" />
+
+    <TextView
+        android:id="@+id/labelNode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="0dp"
+        android:layout_toRightOf="@id/labelCluster"
+        android:padding="2dp"
+        android:text="Node"
+        android:textAppearance="@style/FontBleDeviceLabel" />
+
+    <TextView
+        android:id="@+id/txtNodeID"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/labelNode"
+        android:layout_alignLeft="@id/labelNode"
+        android:padding="2dp"
+        android:text="0"
+        android:textAppearance="@style/FontBleDeviceField" />
+
+    <TextView
+        android:id="@+id/labelHopCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/labelNode"
+        android:padding="2dp"
+        android:text="Hops"
+        android:textAppearance="@style/FontBleDeviceLabel" />
+
+    <TextView
+        android:id="@+id/labelLocation"
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/labelHopCount"
+        android:padding="2dp"
+        android:text="Loc"
+        android:textAppearance="@style/FontBleDeviceLabel" />
+
+    <TextView
+        android:id="@+id/txtLocation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/labelLocation"
+        android:layout_alignLeft="@id/labelLocation"
+        android:padding="2dp"
+        android:text="(0, 0)"
+        android:textAppearance="@style/FontBleDeviceField" />
+
+    <TextView
+        android:id="@+id/labelTimeStamp"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/labelLocation"
+        android:padding="2dp"
+        android:text="Time"
+        android:textAppearance="@style/FontBleDeviceLabel" />
+
+    <TextView
+        android:id="@+id/txtTimeStamp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/labelTimeStamp"
+        android:layout_alignLeft="@id/labelTimeStamp"
+        android:padding="2dp"
+        android:text="-"
+        android:textAppearance="@style/FontBleDeviceField" />
+</RelativeLayout>
