@@ -16,7 +16,7 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
- * Created by too1 on 16-Aug-17.
+ * Created by Le Viet Duc on 26-November-2019
  */
 
 public class NodeLinkManager {
@@ -107,11 +107,10 @@ public class NodeLinkManager {
         mNodeListViewAdapter.add(new Node());
     }
 
-    public void addNode(int connHandle, int cluster, int type, int[] location, int hopcount, int temperature,
+    public void addNode(int connHandle, int type, int[] location, int hopcount, int temperature,
                         int pressure, int humidity, String name, String timestamp) {
         Node newNode = new Node(connHandle, type);
         newNode.setName(name);
-        newNode.setCluster(cluster);
         newNode.setLocation(location);
         newNode.setHopcount(hopcount);
         newNode.setTemperature(temperature);
@@ -162,7 +161,8 @@ public class NodeLinkManager {
         newNode.setTemperature(nodeData[2] << 8 | nodeData[3]);
         newNode.setPressure(nodeData[4] << 8 | nodeData[5]);
         newNode.setHumidity(nodeData[6] << 8 | nodeData[7]);
-        newNode.setTimestamp(new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date()));
+//        newNode.setTimestamp(new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date()));
+        newNode.setTimestamp(new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date()));
         if (addNewNode) mNodeListViewAdapter.add(newNode);
 
         // Send welcome message to the new device
@@ -196,7 +196,8 @@ public class NodeLinkManager {
             updatedNode.setTemperature(data[2] << 8 | data[3]);
             updatedNode.setPressure(data[4] << 8 | data[5]);
             updatedNode.setHumidity(data[6] << 8 | data[7]);
-            updatedNode.setTimestamp(new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date()));
+//            updatedNode.setTimestamp(new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date()));
+            updatedNode.setTimestamp(new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date()));
             mNodeListViewAdapter.notifyDataChanged();
         }
     }

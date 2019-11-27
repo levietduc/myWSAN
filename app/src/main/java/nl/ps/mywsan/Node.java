@@ -12,13 +12,15 @@ public class Node {
     //    private int linkstate; // byte[0] -> 1
     private int connHandle; // byte[1,2] -> 3
     private int type; // byte[3] -> 4
-    private int cluster; // byte[4] -> 5
-    private int hopcount; // byte[5] -> 6
-    private int temperature; // byte[6,7] -> 8
-    private int pressure; // byte[8, 9] -> 10
-    private int humidity; // byte[10,11] -> 12
+    private int hopcount; // byte[5] -> 5
+    private int temperature; // byte[6,7] -> 7
+    private int pressure; // byte[8, 9] -> 11
+    private int humidity; // byte[10,11] -> 13
     private String name; // byte[name.length] -> < Max. 64
     private String timestamp;
+
+    private int clusterID;
+    private int localNodeID;
 
     public Node() {
         Checked = false;
@@ -34,8 +36,11 @@ public class Node {
         this.connHandle = connHandle;
         this.name = name;
         this.type = type;
-        this.timestamp = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
-//        this.timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date()); // the moment of data
+//        this.timestamp = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
+        this.timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date()); // the moment of data
+
+        this.clusterID = connHandle >> 8 & 0x00FF;
+        this.localNodeID = connHandle & 0x00FF;
     }
 
     public int getConnHandle() {
@@ -50,6 +55,13 @@ public class Node {
         return this.connHandle == connHandle;
     }
 
+    public int getClusterID() {
+        return clusterID;
+    }
+
+    public int getLocalNodeID() {
+        return localNodeID;
+    }
 
     public String getName() {
         return name;
@@ -65,14 +77,6 @@ public class Node {
 
     public void setType(int type) {
         this.type = type;
-    }
-
-    public int getCluster() {
-        return cluster;
-    }
-
-    public void setCluster(int cluster) {
-        this.cluster = cluster;
     }
 
     public int getHopcount() {
