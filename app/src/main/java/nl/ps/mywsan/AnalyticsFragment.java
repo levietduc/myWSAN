@@ -2,6 +2,7 @@ package nl.ps.mywsan;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +21,7 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
@@ -27,8 +29,11 @@ import java.util.Set;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
 
 public class AnalyticsFragment extends Fragment {
+
+    public static final String TAG = "AnalyticsFragment";
 
     private static final int REQUEST_ENABLE_BT = 1021;
     private static final int MAX_VISISBLE_GRAPH_ENTRIES = 300;
@@ -43,6 +48,61 @@ public class AnalyticsFragment extends Fragment {
     private LineChart mLineChartPressure;
     private LineChart mLineChartHumidity;
 
+    private deviceViewModel viewModel;
+    private ArrayList<Node> checkedNodeList;
+
+    // remote node
+    private NodeLinkManager mNodeLinkManager;
+
+    // read measurement when from checked node in Aggregation Fragment
+    private SQLiteDatabaseHandler db;
+
+    private String currentTimestamp;
+    private Measurement lastMeasurementinExistingDB;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        mNodeLinkManager = new NodeLinkManager(getActivity().getApplicationContext());
+        Log.d(TAG, "creating mNodeLinkManager");
+
+        // database
+        db = new SQLiteDatabaseHandler(getContext());
+
+        // set current timestamp is the last entry in current database
+        currentTimestamp = db.getLasTimestamp();
+        if (currentTimestamp == null) {
+            currentTimestamp = "20191207_02:22:31:906"; // set to the time when this code is being written
+        }
+        checkedNodeList = new ArrayList<>();
+        viewModel = ViewModelProviders.of(this.getActivity()).get(deviceViewModel.class);
+
+        viewModel.getSelectedDevices().observe(this, checkedNodes -> {
+            checkedNodeList = checkedNodes;
+            Log.d(TAG, "... getSelectedDevices =" + checkedNodeList.size());
+
+        });
+
+        mNodeLinkManager.setNodeLinkListener(new NodeLinkManager.NodeLinkListener() {
+            @Override
+            public void onListChanged() {
+                Log.d(TAG, "New event from nodes: " + mNodeLinkManager.getNumberOfLinks());
+            }
+        });
+
+//        plotSavedTemperatureEntry();
+    }
+
+    public void displayDetails(Node node) {
+//        deviceInfo.setText(device.getName() + " MAC = " + device.getAddress());
+//        deviceType.setText(device.getAddress());
+//        age.setText(""+player.getAge());
+//        country.setText(player.getCountry());
+//        titles.setText(""+player.getTitles());
+//        rank.setText(""+player.getRank());
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup viewGroup, Bundle savedInstanceState) {
         final View rootView = inflater.inflate(R.layout.fragment_environment, viewGroup, false);
@@ -56,7 +116,6 @@ public class AnalyticsFragment extends Fragment {
         mColorView = rootView.findViewById(R.id.color);
         btn_Settings = rootView.findViewById(R.id.weather_settings);
 
-
         mLineChartTemperature = rootView.findViewById(R.id.line_chart_temperature);
         mLineChartPressure = rootView.findViewById(R.id.line_chart_pressure);
         mLineChartHumidity = rootView.findViewById(R.id.line_chart_humidity);
@@ -66,12 +125,37 @@ public class AnalyticsFragment extends Fragment {
         preparePressureGraph();
         prepareHumidityGraph();
 
-        plotSavedTemperatureData();
+//        plotSavedTemperatureEntry();
+
+        // use a timer to update graph
+        Thread t = new Thread() {
+
+            @Override
+            public void run() {
+                try {
+                    while (!isInterrupted()) {
+                        Thread.sleep(3000);
+                        if (getActivity() != null) {
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+//                                    plotSavedTemperatureData();
+                                    plotSavedTemperatureEntry();
+                                }
+                            });
+                        }
+                    }
+                } catch (InterruptedException e) {
+                }
+            }
+        };
+
+        t.start();
 
         return rootView;
     }
 
-    // Prepare graphs
+    // Prepare temperature graphs
     private void prepareTemperatureGraph() {
         if (!mLineChartTemperature.isEmpty()) {
             mLineChartTemperature.getData().getXVals().clear();
@@ -117,6 +201,180 @@ public class AnalyticsFragment extends Fragment {
         YAxis rightAxis = mLineChartTemperature.getAxisRight();
         rightAxis.setEnabled(false);
     }
+
+    // Create temperature datasets
+    private LineDataSet createTemperatureDataSet() {
+        LineDataSet lineDataSet = new LineDataSet(null, getString(R.string.temperature_graph));
+        lineDataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
+        lineDataSet.setColor(ContextCompat.getColor(requireContext(), R.color.red));
+        lineDataSet.setFillColor(ContextCompat.getColor(requireContext(), R.color.accent));
+        lineDataSet.setHighLightColor(ContextCompat.getColor(requireContext(), R.color.accent));
+        lineDataSet.setValueFormatter(new TemperatureChartValueFormatter());
+        lineDataSet.setDrawValues(true);
+        lineDataSet.setDrawCircles(true);
+        lineDataSet.setDrawCircleHole(false);
+        lineDataSet.setValueTextSize(Utils.CHART_VALUE_TEXT_SIZE);
+        lineDataSet.setLineWidth(Utils.CHART_LINE_WIDTH);
+        return lineDataSet;
+    }
+
+    // Add temperature data entry
+    private void addTemperatureEntry(final String timeStamp, final float temperatureValue) {
+        final LineData data = mLineChartTemperature.getData();
+
+        if (data != null) {
+            ILineDataSet set = data.getDataSetByIndex(0);
+
+            if (set == null) {
+                set = createTemperatureDataSet();
+                data.addDataSet(set);
+            }
+            data.addXValue(timeStamp);
+            final Entry entry = new Entry(temperatureValue, set.getEntryCount());
+            data.addEntry(entry, 0);
+            final YAxis leftAxis = mLineChartTemperature.getAxisLeft();
+
+            if (temperatureValue > leftAxis.getAxisMaximum()) {
+                leftAxis.setAxisMaxValue(leftAxis.getAxisMaximum() + 20f);
+            } else if (temperatureValue < leftAxis.getAxisMinimum()) {
+                leftAxis.setAxisMinValue(leftAxis.getAxisMinimum() - 20f);
+            }
+
+            mLineChartTemperature.notifyDataSetChanged();
+            mLineChartTemperature.setVisibleXRangeMaximum(10);
+
+            if (data.getXValCount() >= 10) {
+                final int highestVisibleIndex = mLineChartTemperature.getHighestVisibleXIndex();
+                if ((data.getXValCount() - 10) < highestVisibleIndex) {
+                    mLineChartTemperature.moveViewToX(data.getXValCount() - 11);
+                } else {
+                    mLineChartTemperature.invalidate();
+                }
+            } else {
+                mLineChartTemperature.invalidate();
+            }
+        }
+    }
+
+    // Plot data
+
+    private void plotSavedTemperatureEntry() {
+        LinkedHashMap<String, String> temperatureData = new LinkedHashMap<String, String>();
+        String timestamp;
+        String temperature;
+
+        ArrayList<Node> tempCheckedNodeList = checkedNodeList;
+        if (tempCheckedNodeList.size() > 0) {
+            Node plottingNode = tempCheckedNodeList.get(0);
+
+            temperatureData = db.getNodeTemperatures(plottingNode.getConnHandle(), 2);
+            timestamp = temperatureData.keySet().toArray()[temperatureData.size() - 1].toString();
+            if (currentTimestamp.compareTo(timestamp) < 0) {
+                // new data, need to update graph
+                Log.d(TAG, "plotting temperature graph");
+                temperature = temperatureData.get(timestamp);
+                addTemperatureEntry(timestamp, Float.valueOf(temperature));
+                final LineData data = mLineChartTemperature.getData();
+                mLineChartTemperature.moveViewToX(data.getXValCount() - 11);
+                currentTimestamp = timestamp;
+            }
+
+        }
+        temperatureData.clear();
+
+    }
+
+    private void plotSavedTemperatureData() {
+        LinkedHashMap<String, String> temperatureData = new LinkedHashMap<String, String>();
+//        LinkedHashMap<String, String> temperatureData = new LinkedHashMap<String, String>() {{
+//            put("13:39:59:419", "23.59");
+//            put("13:40:01:427", "23.59");
+//            put("13:40:03:438", "23.75");
+//            put("13:40:05:418", "23.66");
+//            put("13:40:07:428", "23.54");
+//            put("13:40:09:438", "23.57");
+//            put("13:40:11:418", "23.70");
+//            put("13:40:13:429", "23.64");
+//            put("13:40:15:439", "23.61");
+//            put("13:40:17:419", "23.70");
+//        }};
+        ArrayList<Node> tempCheckedNodeList = new ArrayList<>();
+        tempCheckedNodeList = checkedNodeList;
+        if (tempCheckedNodeList.size() > 0) {
+            Node plottingNode = tempCheckedNodeList.get(0);
+            int plottingNodeConnHandle = plottingNode.getConnHandle();
+
+            temperatureData = db.getNodeTemperatures(plottingNode.getConnHandle(), 20);
+        }
+
+
+        if (temperatureData.size() > 0) {
+            final Set<String> timeStamps = temperatureData.keySet();
+            String temperature;
+            for (String timeStamp : timeStamps) {
+                temperature = temperatureData.get(timeStamp);
+                addTemperatureEntry(timeStamp, Float.valueOf(temperature));
+
+                final LineData data = mLineChartTemperature.getData();
+                if (data != null) {
+                    mLineChartTemperature.moveViewToX(data.getXValCount() - 11);
+                }
+            }
+            timeStamps.clear();
+            temperatureData.clear();
+//            mTemperatureData.clear();
+        }
+    }
+
+    private synchronized void handleTemperatureGraphUpdates(LineChart lineChart) {
+        final LineData lineData = lineChart.getData();
+
+        if (lineData.getXVals().size() > MAX_VISISBLE_GRAPH_ENTRIES) {
+            ILineDataSet set = lineData.getDataSetByIndex(0);
+            if (set != null) {
+                if (set.removeFirst()) {
+                    lineData.removeXValue(0);
+                    final List xValues = lineData.getXVals();
+                    for (int i = 0; i < xValues.size(); i++) {
+                        Entry entry = set.getEntryForIndex(i);
+                        if (entry != null) {
+                            entry.setXIndex(i);
+                            entry.setVal(entry.getVal());
+                        }
+                    }
+                    lineData.notifyDataChanged();
+                }
+            }
+        }
+    }
+
+    // Data Format for Line Charts
+    class TemperatureYValueFormatter implements YAxisValueFormatter {
+        private DecimalFormat mFormat;
+
+        TemperatureYValueFormatter() {
+            mFormat = new DecimalFormat("##,##,#0.00");
+        }
+
+        @Override
+        public String getFormattedValue(float value, YAxis yAxis) {
+            return mFormat.format(value); //
+        }
+    }
+
+    class TemperatureChartValueFormatter implements ValueFormatter {
+        private DecimalFormat mFormat;
+
+        TemperatureChartValueFormatter() {
+            mFormat = new DecimalFormat("##,##,#0.00");
+        }
+
+        @Override
+        public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
+            return mFormat.format(value);
+        }
+    }
+//// end of temperature plot
 
     private void preparePressureGraph() {
         mLineChartPressure.setDescription(getString(R.string.time));
@@ -198,21 +456,6 @@ public class AnalyticsFragment extends Fragment {
         rightAxis.setEnabled(false);
     }
 
-    // Create datasets
-    private LineDataSet createTemperatureDataSet() {
-        LineDataSet lineDataSet = new LineDataSet(null, getString(R.string.temperature_graph));
-        lineDataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
-        lineDataSet.setColor(ContextCompat.getColor(requireContext(), R.color.red));
-        lineDataSet.setFillColor(ContextCompat.getColor(requireContext(), R.color.accent));
-        lineDataSet.setHighLightColor(ContextCompat.getColor(requireContext(), R.color.accent));
-        lineDataSet.setValueFormatter(new TemperatureChartValueFormatter());
-        lineDataSet.setDrawValues(true);
-        lineDataSet.setDrawCircles(true);
-        lineDataSet.setDrawCircleHole(false);
-        lineDataSet.setValueTextSize(Utils.CHART_VALUE_TEXT_SIZE);
-        lineDataSet.setLineWidth(Utils.CHART_LINE_WIDTH);
-        return lineDataSet;
-    }
 
     private LineDataSet createPressureDataSet() {
         LineDataSet lineDataSet = new LineDataSet(null, getString(R.string.pressure_graph));
@@ -244,43 +487,7 @@ public class AnalyticsFragment extends Fragment {
         return lineDataSet;
     }
 
-    // Add data entry
-    private void addTemperatureEntry(final String timeStamp, final float temperatureValue) {
-        final LineData data = mLineChartTemperature.getData();
 
-        if (data != null) {
-            ILineDataSet set = data.getDataSetByIndex(0);
-
-            if (set == null) {
-                set = createTemperatureDataSet();
-                data.addDataSet(set);
-            }
-            data.addXValue(timeStamp);
-            final Entry entry = new Entry(temperatureValue, set.getEntryCount());
-            data.addEntry(entry, 0);
-            final YAxis leftAxis = mLineChartTemperature.getAxisLeft();
-
-            if (temperatureValue > leftAxis.getAxisMaximum()) {
-                leftAxis.setAxisMaxValue(leftAxis.getAxisMaximum() + 20f);
-            } else if (temperatureValue < leftAxis.getAxisMinimum()) {
-                leftAxis.setAxisMinValue(leftAxis.getAxisMinimum() - 20f);
-            }
-
-            mLineChartTemperature.notifyDataSetChanged();
-            mLineChartTemperature.setVisibleXRangeMaximum(10);
-
-            if (data.getXValCount() >= 10) {
-                final int highestVisibleIndex = mLineChartTemperature.getHighestVisibleXIndex();
-                if ((data.getXValCount() - 10) < highestVisibleIndex) {
-                    mLineChartTemperature.moveViewToX(data.getXValCount() - 11);
-                } else {
-                    mLineChartTemperature.invalidate();
-                }
-            } else {
-                mLineChartTemperature.invalidate();
-            }
-        }
-    }
 
     private void addPressureEntry(final String timestamp, float pressureValue) {
         final LineData data = mLineChartPressure.getData();
@@ -347,89 +554,7 @@ public class AnalyticsFragment extends Fragment {
         }
     }
 
-    // Plot data
 
-    private void plotSavedTemperatureData() {
-//        LinkedHashMap<String, String> temperatureData = mListener.getSavedTemperatureData(mDevice);
-        LinkedHashMap<String, String> temperatureData = new LinkedHashMap<String, String>() {{
-            put("13:39:59:419", "23.59");
-            put("13:40:01:427", "23.59");
-            put("13:40:03:438", "23.75");
-            put("13:40:05:418", "23.66");
-            put("13:40:07:428", "23.54");
-            put("13:40:09:438", "23.57");
-            put("13:40:11:418", "23.70");
-            put("13:40:13:429", "23.64");
-            put("13:40:15:439", "23.61");
-            put("13:40:17:419", "23.70");
-        }};
-
-        if (temperatureData.size() > 0) {
-            final Set<String> timeStamps = temperatureData.keySet();
-            String temperature;
-            for (String timeStamp : timeStamps) {
-                temperature = temperatureData.get(timeStamp);
-                addTemperatureEntry(timeStamp, Float.valueOf(temperature));
-
-                final LineData data = mLineChartTemperature.getData();
-                if (data != null) {
-                    mLineChartTemperature.moveViewToX(data.getXValCount() - 11);
-                }
-            }
-            timeStamps.clear();
-            temperatureData.clear();
-//            mTemperatureData.clear();
-        }
-    }
-
-    private synchronized void handleTemperatureGraphUpdates(LineChart lineChart) {
-        final LineData lineData = lineChart.getData();
-
-        if (lineData.getXVals().size() > MAX_VISISBLE_GRAPH_ENTRIES) {
-            ILineDataSet set = lineData.getDataSetByIndex(0);
-            if (set != null) {
-                if (set.removeFirst()) {
-                    lineData.removeXValue(0);
-                    final List xValues = lineData.getXVals();
-                    for (int i = 0; i < xValues.size(); i++) {
-                        Entry entry = set.getEntryForIndex(i);
-                        if (entry != null) {
-                            entry.setXIndex(i);
-                            entry.setVal(entry.getVal());
-                        }
-                    }
-                    lineData.notifyDataChanged();
-                }
-            }
-        }
-    }
-
-    // Data Format for Line Charts
-    class TemperatureYValueFormatter implements YAxisValueFormatter {
-        private DecimalFormat mFormat;
-
-        TemperatureYValueFormatter() {
-            mFormat = new DecimalFormat("##,##,#0.00");
-        }
-
-        @Override
-        public String getFormattedValue(float value, YAxis yAxis) {
-            return mFormat.format(value); //
-        }
-    }
-
-    class TemperatureChartValueFormatter implements ValueFormatter {
-        private DecimalFormat mFormat;
-
-        TemperatureChartValueFormatter() {
-            mFormat = new DecimalFormat("##,##,#0.00");
-        }
-
-        @Override
-        public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
-            return mFormat.format(value);
-        }
-    }
 
     class PressureChartYValueFormatter implements YAxisValueFormatter {
         private DecimalFormat mFormat;

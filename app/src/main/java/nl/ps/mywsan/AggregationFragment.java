@@ -25,7 +25,7 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 public class AggregationFragment extends Fragment {
-    public static final String TAG = "AboutFragment";
+    public static final String TAG = "AggregationFragment";
     private static final int UART_PROFILE_READY = 10;
     private static final int UART_PROFILE_CONNECTED = 20;
     private static final int UART_PROFILE_DISCONNECTED = 21;
@@ -210,10 +210,12 @@ public class AggregationFragment extends Fragment {
         mNodeLinkManager.setNodeLinkListener(new NodeLinkManager.NodeLinkListener() {
             @Override
             public void onListChanged() {
-                mStatusText.setText("Connected Devices: " + mNodeLinkManager.getNumberOfLinks());
+                mStatusText.setText("Connected Devices: " + mNodeLinkManager.getNumberOfLinks()
+                        + " Selected Devices: " + mNodeLinkManager.getCheckedNodeList().size());
             }
         });
     }
+
 
     public void displayDetails(BluetoothDevice device) {
 //        deviceInfo.setText(device.getName() + " MAC = " + device.getAddress());
@@ -227,6 +229,7 @@ public class AggregationFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup viewGroup, Bundle savedInstanceState) {
 
+        viewModel = ViewModelProviders.of(this.getActivity()).get(deviceViewModel.class);
 
         View view = inflater.inflate(R.layout.aggregationlayout, viewGroup, false);
 
@@ -253,6 +256,11 @@ public class AggregationFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 mNodeLinkManager.itemClicked(i);
+                // update checked nodes to Analytics Fragment
+                viewModel.selectDevices(mNodeLinkManager.getCheckedNodeList());
+                // update UI status
+                mStatusText.setText("Connected Devices: " + mNodeLinkManager.getNumberOfLinks()
+                        + " Selected Devices: " + mNodeLinkManager.getCheckedNodeList().size());
             }
         });
 
@@ -285,7 +293,9 @@ public class AggregationFragment extends Fragment {
                         //Disconnect button pressed
                         if (mDevice != null) {
                             mBleLinkManager.disconnectCentral();
+                            mBleLinkManager.clearBleDevices();
                             mNodeLinkManager.disconnectCentral();
+                            mNodeLinkManager.clearNodeDevices();
                             //mService.disconnect();
                         }
                     }

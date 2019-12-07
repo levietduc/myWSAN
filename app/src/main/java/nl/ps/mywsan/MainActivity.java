@@ -41,10 +41,20 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
     private BluetoothAdapter mBtAdapter = null;
     private ProgressDialog mConProgDialog;
 
+//    private SQLiteDatabaseHandler db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+//        db = new SQLiteDatabaseHandler(this);
+//
+//        //        // add dummy nodes to debug
+//        addNode(4353, "Dummy", 6,  11,  1,  3,  4,
+//                5,  6,  1,  1,  1, new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date()));
+//        addNode(4609, "Dummy", 6,  12,  2,  3,  4,
+//                5,  6,  1,  1,  1, new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date()));
+//        // end of adding dummy nodes
 
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBtAdapter == null) {
@@ -248,6 +258,27 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
         }
         return true;
     }
+
+//    public void addNode(int connHandle, String name, int type, int clusterID, int nodeID, int hopCount, int temperature,
+//                        int pressure, int humidity, int btnState, int latitude, int longitude, String timestamp) {
+//
+//        // Add measurement to database
+//        Measurement measurement = new Measurement();
+//        measurement.setName(name);
+//        measurement.setType(type);
+//        measurement.setConnHandle(connHandle);
+//        measurement.setClusterID(connHandle >> 8 & 0x00FF);
+//        measurement.setNodeID(connHandle & 0x00FF);
+//        measurement.setHopcount(hopCount);
+//        measurement.setTemperature(temperature);
+//        measurement.setPressure(pressure);
+//        measurement.setHumidity(humidity);
+//        measurement.setBtnState(btnState);
+//        measurement.setLatitude(latitude);
+//        measurement.setLongitude(longitude);
+//        measurement.setTimestamp(timestamp);
+//        db.addMeasurement(measurement);
+//    }
 
 }
 

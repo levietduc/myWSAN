@@ -57,7 +57,7 @@
         android:layout_height="wrap_content"
         android:layout_toRightOf="@id/labelName"
         android:padding="2dp"
-        android:text="Cluster"
+        android:text="CH"
         android:textAppearance="@style/FontBleDeviceLabel" />
 
     <TextView
@@ -101,29 +101,29 @@
         android:textAppearance="@style/FontBleDeviceLabel" />
 
     <TextView
-        android:id="@+id/labelLocation"
-        android:layout_width="60dp"
+        android:id="@+id/labelButton"
+        android:layout_width="50dp"
         android:layout_height="wrap_content"
         android:layout_toRightOf="@id/labelHopCount"
         android:padding="2dp"
-        android:text="Loc"
+        android:text="Button"
         android:textAppearance="@style/FontBleDeviceLabel" />
 
     <TextView
-        android:id="@+id/txtLocation"
+        android:id="@+id/txtBtnState"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/labelLocation"
-        android:layout_alignLeft="@id/labelLocation"
+        android:layout_below="@id/labelButton"
+        android:layout_alignLeft="@id/labelButton"
         android:padding="2dp"
-        android:text="(0, 0)"
+        android:text="off"
         android:textAppearance="@style/FontBleDeviceField" />
 
     <TextView
         android:id="@+id/labelTimeStamp"
-        android:layout_width="100dp"
+        android:layout_width="120dp"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/labelLocation"
+        android:layout_toRightOf="@id/labelButton"
         android:padding="2dp"
         android:text="Time"
         android:textAppearance="@style/FontBleDeviceLabel" />

@@ -14,19 +14,39 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Random;
 
 /**
  * Created by Le Viet Duc on 26-November-2019
  */
-
+// id for a node in database should not be the connHandler as the connHandler can be duplicated when adding new sensor data of the same node
 public class NodeLinkManager {
+    // database
+    // save measurement when new node is added to view list and when data of a node is updated
+    private SQLiteDatabaseHandler db;
+
+    // Connection
     private NodeListViewAdapter mNodeListViewAdapter;
     private LedButtonService mService;
     private NodeLinkListener mListener = null;
 
+    private deviceViewModel viewModel;
+
     public NodeLinkManager(Context appContext) {
-        ArrayList<Node> nodeDeviceList = new ArrayList<Node>();
-        mNodeListViewAdapter = new NodeListViewAdapter(appContext, nodeDeviceList);
+
+        ArrayList<Node> nodeList = new ArrayList<Node>();
+        mNodeListViewAdapter = new NodeListViewAdapter(appContext, nodeList);
+
+        // database
+        db = new SQLiteDatabaseHandler(appContext);
+        Log.d("NodeLinkManager", "new db");
+
+//        // add dummy nodes to debug
+//        addNode(4353, "Dummy", 6,  11,  1,  3,  4,
+//                5,  6,  1,  1,  1, new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date()));
+//        addNode(4609, "Dummy", 6,  12,  2,  3,  4,
+//                5,  6,  1,  1,  1, new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date()));
+//        // end of adding dummy nodes
     }
 
     public void setNodeLinkListener(NodeLinkListener listener) {
@@ -83,6 +103,10 @@ public class NodeLinkManager {
                 if (mListener != null) {
                     mListener.onListChanged();
                 }
+//                // trigger listener if there are checked node
+//                if (mListener != null && getCheckedNodeList().size()>0){
+//                    mListener.onClickedNodeChanged();
+//                }
                 break;
             // Device disconnected
             case NODE_LINK_DISCONNECTED:
@@ -90,11 +114,34 @@ public class NodeLinkManager {
                 if (mListener != null) {
                     mListener.onListChanged();
                 }
+//                // trigger listener if there are checked node
+//                if (mListener != null && getCheckedNodeList().size()>0){
+//                    mListener.onClickedNodeChanged();
+//                }
                 break;
             // Data update received
             case NODE_LINK_DATA_UPDATE:
                 Log.d("NodeLinkManager", "Data updated");
-                nodeDataUpdate(connHandle, Arrays.copyOfRange(packet, 4, 4 + packet[3]));
+                // check again if the node is existed in the list view
+                if (mNodeListViewAdapter.findByConnHandle(connHandle) != null) {
+                    nodeDataUpdate(connHandle, Arrays.copyOfRange(packet, 5, 5 + packet[4]));
+//                    // trigger listener if there are checked node
+//                    if (mListener != null && getCheckedNodeList().size()>0){
+//                        mListener.onClickedNodeChanged();
+//                    }
+                } else {
+                    //TODO: the node hasn't added to the list view, now add it
+                    addNode(connHandle, Arrays.copyOfRange(packet, 3, packet.length));
+//                    // trigger listener if there are checked node
+//                    if (mListener != null && getCheckedNodeList().size()>0){
+//                        mListener.onClickedNodeChanged();
+//                    }
+
+                }
+                if (mListener != null) {
+                    mListener.onListChanged();
+                }
+
                 break;
         }
     }
@@ -103,36 +150,62 @@ public class NodeLinkManager {
         return mNodeListViewAdapter;
     }
 
+    // get list of checked nodes
+    public ArrayList<Node> getCheckedNodeList() {
+        ArrayList<Node> checkedNodeList = new ArrayList<>();
+
+        for (int i = 0; i < mNodeListViewAdapter.getCount(); i++) {
+            Node node = (Node) mNodeListViewAdapter.getItem(i);
+            if (node.Checked == true) {
+                checkedNodeList.add(node);
+            }
+        }
+        return checkedNodeList;
+    }
+
     public void addDebugItem() {
         mNodeListViewAdapter.add(new Node());
     }
 
-    public void addNode(int connHandle, int type, int[] location, int hopcount, int temperature,
-                        int pressure, int humidity, String name, String timestamp) {
+    public void addNode(int connHandle, String name, int type, int clusterID, int nodeID, int hopCount, int temperature,
+                        int pressure, int humidity, int btnState, int latitude, int longitude, String timestamp) {
+
         Node newNode = new Node(connHandle, type);
         newNode.setName(name);
-        newNode.setLocation(location);
-        newNode.setHopcount(hopcount);
+        newNode.setHopcount(hopCount);
         newNode.setTemperature(temperature);
         newNode.setPressure(pressure);
         newNode.setHumidity(humidity);
+        newNode.setBtnState(btnState);
         newNode.setTimestamp(timestamp);
         mNodeListViewAdapter.add(newNode);
 
-        // Send welcome message to the new device
-        /*byte []newCmd = new byte[2];
-        newCmd[0] = (byte)OutgoingCommand.PostConnectMessage.ordinal();
-        newCmd[1] = (byte)connHandle;
-        sendOutgoingCommand(newCmd);*/
+        // Add measurement to database
+        Measurement measurement = new Measurement();
+        measurement.setName(name);
+        measurement.setType(type);
+        measurement.setConnHandle(connHandle);
+        measurement.setClusterID(connHandle >> 8 & 0x00FF);
+        measurement.setNodeID(connHandle & 0x00FF);
+        measurement.setHopcount(hopCount);
+        measurement.setTemperature(temperature);
+        measurement.setPressure(pressure);
+        measurement.setHumidity(humidity);
+        measurement.setBtnState(btnState);
+        measurement.setLatitude(latitude);
+        measurement.setLongitude(longitude);
+        measurement.setTimestamp(timestamp);
+        db.addMeasurement(measurement);
     }
 
     public void addNode(int connHandle, byte[] nodeData) {
         String deviceName;
-        if (nodeData.length > 8) {
-            deviceName = new String(Arrays.copyOfRange(nodeData, 8, nodeData.length));
+        if (nodeData.length > nodeData[1] + 2) {
+            deviceName = new String(Arrays.copyOfRange(nodeData, nodeData[1] + 2, nodeData.length));
         } else deviceName = "No name";
 
         Node newNode = null;
+        Measurement newMeasurement = null;
         for (int i = 0; i < mNodeListViewAdapter.getCount(); i++) {
             if (((Node) mNodeListViewAdapter.getItem(i)).getConnHandle() == connHandle) {
                 newNode = (Node) mNodeListViewAdapter.getItem(i);
@@ -150,31 +223,50 @@ public class NodeLinkManager {
 //        tx_command_payload[8] =  data->p_data[10];; //pressure 2 -> nodeData[5]
 //        tx_command_payload[9] = data->p_data[11];; //hum 1 -> nodeData[6]
 //        tx_command_payload[10] =  data->p_data[12];; //hum 2 -> nodeData[7]
+//        tx_command_payload[11] =  data->p_data[13];; //btnState -> nodeData[8]
 
+//        String timestamp = new SimpleDateFormat("HH:mm:ss:SSS", Locale.getDefault()).format(new Date());
+        String timestamp = new SimpleDateFormat("yyyyMMdd_HH:mm:ss:SSS", Locale.getDefault()).format(new Date());
         boolean addNewNode = false;
         if (newNode == null) {
             newNode = new Node(connHandle, nodeData[0]);
             addNewNode = true;
+            // database
+            newMeasurement = new Measurement(connHandle, nodeData[0]);
+            // Add measurement to database
+            newMeasurement.setName(deviceName);
+            newMeasurement.setConnHandle(connHandle);
+            newMeasurement.setClusterID(connHandle >> 8 & 0x00FF);
+            newMeasurement.setNodeID(connHandle & 0x00FF);
+            newMeasurement.setHopcount((int) nodeData[2]);
+            newMeasurement.setTemperature(nodeData[3] << 8 | nodeData[4]);
+            newMeasurement.setPressure(nodeData[5] << 8 | nodeData[6]);
+            newMeasurement.setHumidity(nodeData[7] << 8 | nodeData[8]);
+            newMeasurement.setBtnState((int) nodeData[9]);
+            newMeasurement.setLatitude(0);
+            newMeasurement.setLongitude(0);
+            newMeasurement.setTimestamp(timestamp);
         }
         newNode.setName(deviceName);
-        newNode.setHopcount((int) nodeData[1]);
-        newNode.setTemperature(nodeData[2] << 8 | nodeData[3]);
-        newNode.setPressure(nodeData[4] << 8 | nodeData[5]);
-        newNode.setHumidity(nodeData[6] << 8 | nodeData[7]);
-//        newNode.setTimestamp(new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date()));
-        newNode.setTimestamp(new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date()));
-        if (addNewNode) mNodeListViewAdapter.add(newNode);
+        newNode.setHopcount((int) nodeData[2]);
+        newNode.setTemperature(nodeData[3] << 8 | nodeData[4]);
+        newNode.setPressure(nodeData[5] << 8 | nodeData[6]);
+        newNode.setHumidity(nodeData[7] << 8 | nodeData[8]);
+        newNode.setBtnState((int) nodeData[9]);
+        newNode.setTimestamp(timestamp);
 
-        // Send welcome message to the new device
-        /*byte []newCmd = new byte[2];
-        newCmd[0] = (byte)OutgoingCommand.PostConnectMessage.ordinal();
-        newCmd[1] = (byte)connHandle;
-        sendOutgoingCommand(newCmd);*/
+
+        if (addNewNode) {
+            mNodeListViewAdapter.add(newNode);
+            // add new measurement to database
+            db.addMeasurement(newMeasurement);
+        }
         mNodeListViewAdapter.notifyDataChanged();
     }
 
     public void removeNode(int connHandle) {
         mNodeListViewAdapter.removeByConnHandle(connHandle);
+        // when a node is removed from list view, we don't have to remove it from the database
     }
 
 
@@ -190,15 +282,40 @@ public class NodeLinkManager {
 //        tx_command_payload[10] =  data->p_data[12];; //hum 2 -> nodeData[6]
 
     public void nodeDataUpdate(int connHandle, byte[] data) {
+        // update the node view list, which describes node characteristics
         Node updatedNode = mNodeListViewAdapter.findByConnHandle(connHandle);
+        // create an new measurement database
+        Measurement newMeasurement = null;
         if (updatedNode != null && data.length >= 1) {
             updatedNode.setHopcount((int) data[0]);
-            updatedNode.setTemperature(data[2] << 8 | data[3]);
-            updatedNode.setPressure(data[4] << 8 | data[5]);
-            updatedNode.setHumidity(data[6] << 8 | data[7]);
-//            updatedNode.setTimestamp(new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date()));
-            updatedNode.setTimestamp(new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date()));
+            updatedNode.setTemperature(data[1] << 8 | data[2]);
+            updatedNode.setPressure(data[3] << 8 | data[4]);
+            // when pressing the button on a thingy, data length is only 7 (data[0..6]) -> get a bug from here.
+            updatedNode.setHumidity(data[5] << 8 | data[6]);
+            updatedNode.setBtnState((int) data[7]);
+//            String timestamp = new SimpleDateFormat("HH:mm:ss:SSS", Locale.getDefault()).format(new Date());
+            String timestamp = new SimpleDateFormat("yyyyMMdd_HH:mm:ss:SSS", Locale.getDefault()).format(new Date());
+            updatedNode.setTimestamp(timestamp);
             mNodeListViewAdapter.notifyDataChanged();
+
+            // update database = add the update measurement
+            newMeasurement = new Measurement(connHandle, updatedNode.getType()); // fix this
+            newMeasurement.setName(updatedNode.getName());
+            newMeasurement.setConnHandle(connHandle);
+            newMeasurement.setClusterID(connHandle >> 8 & 0x00FF);
+            newMeasurement.setNodeID(connHandle & 0x00FF);
+            newMeasurement.setHopcount((int) data[0]);
+//            newMeasurement.setTemperature(data[1] << 8 | data[2]);
+            // add a random temperature value to debug chart plots
+            newMeasurement.setTemperature(new Random().nextInt((50 - 0) + 1) + 0);
+            newMeasurement.setPressure(data[3] << 8 | data[4]);
+            newMeasurement.setHumidity(data[5] << 8 | data[6]);
+            newMeasurement.setBtnState((int) data[7]);
+            newMeasurement.setLatitude(updatedNode.getLatitude());
+            newMeasurement.setLongitude(updatedNode.getLongitude());
+            newMeasurement.setTimestamp(timestamp);
+            db.addMeasurement(newMeasurement);
+
         }
     }
 
@@ -302,12 +419,16 @@ public class NodeLinkManager {
 
         @Override
         public View getView(int position, View convertView, ViewGroup viewGroup) {
+
             if (convertView == null) {
                 convertView = LayoutInflater.from(getContext()).inflate(R.layout.node_link_view, viewGroup, false);
             }
             Node currentDevice = (Node) getItem(position);
+            // remove the last four letters of device name
             Resources res = getContext().getResources();
-            ((TextView) convertView.findViewById(R.id.txtName)).setText(currentDevice.getName());
+            String parsedDeviceName = currentDevice.getName();
+//            parsedDeviceName = parsedDeviceName.substring(0, parsedDeviceName.length() - 4);
+            ((TextView) convertView.findViewById(R.id.txtName)).setText(parsedDeviceName);
             String[] nameList = {"Unknown!", "LocalBlinky", "LocalThingy", "RemoteBlinky", "RemoteThingy", "ClusterHeard"};
             if (currentDevice.getType() < nameList.length) {
                 //((TextView)convertView.findViewById(R.id.type)).setText(nameList[currentDevice.getType()]);
@@ -327,11 +448,26 @@ public class NodeLinkManager {
             int mConnHandle = currentDevice.getConnHandle();
             int mClusterID = mConnHandle >> 8 & 0x00FF;
             int mNodeID = mConnHandle & 0x00FF;
-
+            Log.d("NodeLinkManager", String.valueOf(mClusterID));
             ((TextView) convertView.findViewById(R.id.txtClusterID)).setText(String.valueOf(mClusterID));
             ((TextView) convertView.findViewById(R.id.txtNodeID)).setText(String.valueOf(mNodeID));
             ((TextView) convertView.findViewById(R.id.txtHopCount)).setText(String.valueOf(currentDevice.getHopcount()));
-            ((TextView) convertView.findViewById(R.id.txtLocation)).setText(String.valueOf(currentDevice.getLocation()));
+
+            String btnStateStr = "Off";
+            TextView buttonStateText = convertView.findViewById(R.id.txtBtnState);
+            if (currentDevice.getBtnState() == 1) {
+                btnStateStr = "On";
+                buttonStateText.setTextAppearance(getContext(), R.style.FontBleDeviceFieldOn);
+            } else {
+                btnStateStr = "Off";
+                buttonStateText.setTextAppearance(getContext(), R.style.FontBleDeviceField);
+            }
+            buttonStateText.setText(btnStateStr);
+
+            convertView.findViewById(R.id.nodeListMainLayout).setBackground(res.getDrawable(currentDevice.Checked ?
+                    R.drawable.ble_device_list_background_checked :
+                    R.drawable.ble_device_list_background));
+
             ((TextView) convertView.findViewById(R.id.txtTimeStamp)).setText(String.valueOf(currentDevice.getTimestamp()));
             return convertView;
         }

@@ -1,13 +1,9 @@
 package nl.ps.mywsan;
 
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+public class Measurement {
 
-public class Node {
-
-    public boolean Checked;
+    private int id; // id for database
     private int latitude;
     private int longitude;
     //    private int linkstate; // byte[0] -> 1
@@ -19,31 +15,39 @@ public class Node {
     private int humidity; // byte[10,11] -> 13
     private int btnState; // byte[12] -> 14
     private String name; // byte[name.length] -> < Max. 64
+    private int clusterID;
+    private int nodeID;
     private String timestamp;
 
-    private int clusterID;
-    private int localNodeID;
-
-    public Node() {
-        Checked = false;
+    public Measurement() {
         name = "Noname";
+        latitude = 0;
+        longitude = 0;
         hopcount = 1;
         temperature = 25;
         pressure = 1000;
         humidity = 70;
         btnState = 0;
-        latitude = 0;
-        longitude = 0;
+        timestamp = "null";
+//        id = -1;
     }
 
-    public Node(int connHandle, int type) {
+    public Measurement(int connHandle, int type) {
         this.connHandle = connHandle;
-        this.name = name;
         this.type = type;
-//        this.timestamp = new SimpleDateFormat("HH:mm:ss:SSS", Locale.getDefault()).format(new Date());
-        this.timestamp = new SimpleDateFormat("yyyyMMdd_HH:mm:ss:SSS", Locale.getDefault()).format(new Date()); // the moment of data
+//        this.timestamp = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
+//        this.timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date()); // the moment of data
+
         this.clusterID = connHandle >> 8 & 0x00FF;
-        this.localNodeID = connHandle & 0x00FF;
+        this.nodeID = connHandle & 0x00FF;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public int getConnHandle() {
@@ -62,8 +66,16 @@ public class Node {
         return clusterID;
     }
 
-    public int getLocalNodeID() {
-        return localNodeID;
+    public void setClusterID(int clusterID) {
+        this.clusterID = clusterID;
+    }
+
+    public int getNodeID() {
+        return nodeID;
+    }
+
+    public void setNodeID(int nodeID) {
+        this.nodeID = nodeID;
     }
 
     public String getName() {
@@ -88,22 +100,6 @@ public class Node {
 
     public void setHopcount(int hopcount) {
         this.hopcount = hopcount;
-    }
-
-    public int getLatitude() {
-        return latitude;
-    }
-
-    public void setLatitude(int latitude) {
-        this.latitude = latitude;
-    }
-
-    public int getLongitude() {
-        return longitude;
-    }
-
-    public void setLongitude(int longitude) {
-        this.longitude = longitude;
     }
 
     public int getTemperature() {
@@ -138,6 +134,22 @@ public class Node {
         this.btnState = btnState;
     }
 
+    public int getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(int latitude) {
+        this.latitude = latitude;
+    }
+
+    public int getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(int longitude) {
+        this.longitude = longitude;
+    }
+
     public String getTimestamp() {
         return timestamp;
     }
@@ -146,10 +158,9 @@ public class Node {
         this.timestamp = timestamp;
     }
 
-
     @Override
     public String toString() {
-        return connHandle + " - " + name + " - " + type + " - " + temperature + "oC " + pressure + "mPa " + humidity + "pH " + timestamp;
+        return id + " - " + connHandle + " - " + name + " - " + type + " - " + temperature + "oC " + pressure + "mPa " + humidity + "pH " + btnState + " - " + timestamp;
     }
 
 }
