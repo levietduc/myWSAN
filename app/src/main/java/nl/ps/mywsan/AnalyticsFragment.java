@@ -171,6 +171,8 @@ public class AnalyticsFragment extends Fragment {
 //                                    prepareTemperatureMultiLines();
 //                                    prepareTemperatureMultiLines_V2();
 
+                                    updateTemperatureValuesMultiLines();
+
                                 }
                             });
                         }
@@ -503,7 +505,6 @@ public class AnalyticsFragment extends Fragment {
         // use the interface ILineDataSet
         LineData data = null;
 
-//        if (data==null) {
         List<ILineDataSet> dataSets = new ArrayList<ILineDataSet>();
         for (int i = 0; i < checkedNodeList.size(); i++) {
             List<Entry> valsCompi = new ArrayList<Entry>();
@@ -540,70 +541,17 @@ public class AnalyticsFragment extends Fragment {
             }
         }
 
-
-//        }
-//        }else{
-//            List<ILineDataSet> dataSets = new ArrayList<ILineDataSet>();
-//            for (int i = 0; i < checkedNodeList.size(); i++) {
-//                List<Entry> valsCompi = new ArrayList<Entry>();
-//                float temperature1 = (new Random().nextInt((5000 + 1000) + 1) + 0) / 100f;
-//                Entry cie1 = new Entry(temperature1, data.getXValCount()); // 0 == quarter 1
-//                valsCompi.add(cie1);
-//                LineDataSet setCompi = new LineDataSet(valsCompi, String.valueOf(checkedNodeList.get(i).getConnHandle()));
-//                setCompi.setAxisDependency(YAxis.AxisDependency.LEFT);
-//                data.addDataSet(setCompi);
-//            }
-//            data.addXValue(new SimpleDateFormat("yyyyMMdd_HH:mm:ss:SSS", Locale.getDefault()).format(new Date()));
-//            mLineChartTemperature.invalidate(); // refresh
-//            mLineChartTemperature.moveViewToX(data.getXValCount() - 11);
-//        }
-
     }
 
     // prepare mulitple lines
     // plot multiple lines
-    private void prepareTemperatureMultiLines_V2() {
+    private void updateTemperatureValuesMultiLines() {
         String timestamp = new SimpleDateFormat("yyyyMMdd_HH:mm:ss:SSS", Locale.getDefault()).format(new Date());
 
         // use the interface ILineDataSet
         LineData data = mLineChartTemperature.getData();
 
-        if (data == null) {
-
-            List<ILineDataSet> dataSets = new ArrayList<ILineDataSet>();
-            for (int i = 0; i < checkedNodeList.size(); i++) {
-                List<Entry> valsCompi = new ArrayList<Entry>();
-                final float temperature1 = (new Random().nextInt((4000 - 1000) + 1) + 0) / 100f;
-                final Entry cie1 = new Entry(temperature1, 0); // 0 == quarter 1
-                valsCompi.add(cie1);
-                final float temperature2 = (new Random().nextInt((4000 - 1000) + 1) + 0) / 100f;
-                final Entry cie2 = new Entry(temperature2, 1); // 1 == quarter 2 ...
-                valsCompi.add(cie2);
-                LineDataSet setCompi = new LineDataSet(valsCompi, String.valueOf(checkedNodeList.get(i).getConnHandle()));
-                setCompi.setAxisDependency(YAxis.AxisDependency.LEFT);
-                dataSets.add(setCompi);
-            }
-
-            List<String> xVals = new ArrayList<>();
-            xVals.add(new SimpleDateFormat("yyyyMMdd_HH:mm:ss:SSS", Locale.getDefault()).format(new Date()));
-            xVals.add(new SimpleDateFormat("yyyyMMdd_HH:mm:ss:SSS", Locale.getDefault()).format(new Date()));
-
-            data = new LineData(xVals, dataSets);
-            mLineChartTemperature.setData(data);
-            mLineChartTemperature.invalidate(); // refresh
-            mLineChartTemperature.moveViewToX(data.getXValCount() - 11);
-
-            if (checkedNodeList.size() > 0) {
-                data = mLineChartTemperature.getData();
-                Log.d(TAG, "After first 2 entries added:");
-                Log.d(TAG, "data.getXValCount() = " + data.getXValCount());
-                Log.d(TAG, "data.getYValCount() = " + data.getYValCount());
-                Log.d(TAG, "data.getDataSets().size()= " + data.getDataSets().size());
-                Log.d(TAG, "data.getDataSetByIndex(0).getEntryCount()= " + data.getDataSetByIndex(0).getEntryCount());
-                Log.d(TAG, "data.getDataSetByIndex(0).getEntriesForXIndex(1)= " + data.getDataSetByIndex(0).getEntriesForXIndex(1));
-                Log.d(TAG, "data.getDataSetByIndex(1).getEntriesForXIndex(1)= " + data.getDataSetByIndex(1).getEntriesForXIndex(1));
-            }
-        } else {
+        if (data != null) {
             List<ILineDataSet> updateDataSets = new ArrayList<ILineDataSet>();
             updateDataSets = data.getDataSets();
             // debug dataSets
@@ -611,11 +559,13 @@ public class AnalyticsFragment extends Fragment {
                 data = mLineChartTemperature.getData();
                 Log.d(TAG, "After first 2 entries added:");
                 Log.d(TAG, "data.getXValCount() = " + data.getXValCount());
-                Log.d(TAG, "data.getYValCount() = " + data.getYValCount()); // return all yVals from all datasets
+                Log.d(TAG, "data.getYValCount() = " + data.getYValCount());
                 Log.d(TAG, "data.getDataSets().size()= " + data.getDataSets().size());
-                Log.d(TAG, "data.getDataSetByIndex(0).getEntryCount()= " + data.getDataSetByIndex(0).getEntryCount());
-                Log.d(TAG, "data.getDataSetByIndex(0).getEntriesForXIndex(1)= " + data.getDataSetByIndex(0).getEntriesForXIndex(1));
-                Log.d(TAG, "data.getDataSetByIndex(1).getEntriesForXIndex(1)= " + data.getDataSetByIndex(1).getEntriesForXIndex(1));
+                for (int i = 0; i < data.getDataSets().size(); i++) {
+                    for (int j = 0; j < data.getDataSetByIndex(i).getEntryCount(); j++) {
+                        Log.d(TAG, "data.getDataSetByIndex(i).getEntriesForXIndex(j)= " + data.getDataSetByIndex(i).getEntriesForXIndex(j));
+                    }
+                }
             }
             for (int i = 0; i < data.getDataSetCount(); i++) {
                 final float temperature1 = (new Random().nextInt((5000 + 1000) + 1) + 0) / 100f;
@@ -630,7 +580,7 @@ public class AnalyticsFragment extends Fragment {
                     leftAxis.setAxisMinValue(leftAxis.getAxisMinimum() - 20f);
                 }
             }
-            data.addXValue(new SimpleDateFormat("yyyyMMdd_HH:mm:ss:SSS", Locale.getDefault()).format(new Date()));
+            data.addXValue(timestamp);
 
             mLineChartTemperature.notifyDataSetChanged();
             mLineChartTemperature.setVisibleXRangeMaximum(10);
@@ -651,15 +601,16 @@ public class AnalyticsFragment extends Fragment {
             // debug, recheck data adding
             if (checkedNodeList.size() > 0) {
                 data = mLineChartTemperature.getData();
-                Log.d(TAG, "After first 2 entries added:");
+                Log.d(TAG, "After first the new entries added:");
                 Log.d(TAG, "data.getXValCount() = " + data.getXValCount());
-                Log.d(TAG, "data.getYValCount() = " + data.getYValCount()); // return all yVals from all datasets
+                Log.d(TAG, "data.getYValCount() = " + data.getYValCount());
                 Log.d(TAG, "data.getDataSets().size()= " + data.getDataSets().size());
-                Log.d(TAG, "data.getDataSetByIndex(0).getEntryCount()= " + data.getDataSetByIndex(0).getEntryCount());
-                Log.d(TAG, "data.getDataSetByIndex(0).getEntriesForXIndex(1)= " + data.getDataSetByIndex(0).getEntriesForXIndex(1));
-                Log.d(TAG, "data.getDataSetByIndex(1).getEntriesForXIndex(1)= " + data.getDataSetByIndex(1).getEntriesForXIndex(1));
+                for (int i = 0; i < data.getDataSets().size(); i++) {
+                    for (int j = 0; j < data.getDataSetByIndex(i).getEntryCount(); j++) {
+                        Log.d(TAG, "data.getDataSetByIndex(i).getEntriesForXIndex(j)= " + data.getDataSetByIndex(i).getEntriesForXIndex(j));
+                    }
+                }
             }
-
         }
 
     }
