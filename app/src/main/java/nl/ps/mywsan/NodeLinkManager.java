@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Random;
 
 /**
  * Created by Le Viet Duc on 26-November-2019
@@ -305,9 +304,9 @@ public class NodeLinkManager {
             newMeasurement.setClusterID(connHandle >> 8 & 0x00FF);
             newMeasurement.setNodeID(connHandle & 0x00FF);
             newMeasurement.setHopcount((int) data[0]);
-//            newMeasurement.setTemperature(data[1] << 8 | data[2]);
+            newMeasurement.setTemperature(data[1] << 8 | data[2]);
             // add a random temperature value to debug chart plots
-            newMeasurement.setTemperature(new Random().nextInt((50 - 0) + 1) + 0);
+//            newMeasurement.setTemperature(new Random().nextInt((50 - 0) + 1) + 0);
             newMeasurement.setPressure(data[3] << 8 | data[4]);
             newMeasurement.setHumidity(data[5] << 8 | data[6]);
             newMeasurement.setBtnState((int) data[7]);
