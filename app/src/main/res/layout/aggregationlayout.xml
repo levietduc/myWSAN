@@ -12,23 +12,10 @@
         android:text="Connect" />
 
     <ListView
-        android:id="@+id/listViewBleDevice"
-        android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:layout_above="@id/textViewNetworkNode" />
-
-    <ListView
         android:id="@+id/listViewNode"
         android:layout_width="match_parent"
-        android:layout_height="360dp"
+        android:layout_height="match_parent"
         android:layout_above="@id/textViewStatus" />
-
-    <TextView
-        android:id="@+id/textViewNetworkNode"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/listViewNode"
-        android:text="Network Nodes:" />
 
     <TextView
         android:id="@+id/textViewStatus"

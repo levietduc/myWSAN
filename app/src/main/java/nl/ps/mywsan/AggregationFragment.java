@@ -235,17 +235,17 @@ public class AggregationFragment extends Fragment {
 
 //        deviceInfo = view.findViewById(R.id.deviceAddress);
 //        deviceType = view.findViewById(R.id.deviceType);
-        mBleDeviceListView = view.findViewById(R.id.listViewBleDevice);
-        mBleDeviceListView = view.findViewById(R.id.listViewBleDevice);
-        mBleDeviceListView.setAdapter(mBleLinkManager.getListAdapter());
-        mBleDeviceListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-        mBleDeviceListView.setItemsCanFocus(false);
-        mBleDeviceListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                mBleLinkManager.itemClicked(i);
-            }
-        });
+//        mBleDeviceListView = view.findViewById(R.id.listViewBleDevice);
+//        mBleDeviceListView = view.findViewById(R.id.listViewBleDevice);
+//        mBleDeviceListView.setAdapter(mBleLinkManager.getListAdapter());
+//        mBleDeviceListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+//        mBleDeviceListView.setItemsCanFocus(false);
+//        mBleDeviceListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+//                mBleLinkManager.itemClicked(i);
+//            }
+//        });
 
         mNodeListView = view.findViewById(R.id.listViewNode);
         mNodeListView = view.findViewById(R.id.listViewNode);

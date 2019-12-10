@@ -62,181 +62,10 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:baselineAligned="false"
-                    android:orientation="horizontal"
-                    android:paddingStart="@dimen/cardview_horizontal_padding"
-                    android:paddingTop="@dimen/activity_vertical_margin"
-                    android:paddingEnd="@dimen/cardview_horizontal_padding"
-                    android:paddingBottom="@dimen/activity_vertical_margin">
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/temperature"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:gravity="center"
-                            android:paddingTop="@dimen/cardview_action_padding"
-                            android:textSize="16sp" />
-
-                        <androidx.appcompat.widget.AppCompatImageView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:contentDescription="@string/temperature_title"
-                            app:srcCompat="@drawable/ic_temp" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/pressure"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:gravity="center"
-                            android:paddingTop="@dimen/cardview_action_padding"
-                            android:textSize="16sp" />
-
-                        <androidx.appcompat.widget.AppCompatImageView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:contentDescription="@string/pressure_title"
-                            android:scaleType="center"
-                            app:srcCompat="@drawable/ic_barometer" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/humidity"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:gravity="center"
-                            android:paddingTop="@dimen/cardview_action_padding"
-                            android:textSize="16sp" />
-
-                        <androidx.appcompat.widget.AppCompatImageView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:contentDescription="@string/humidity_title"
-                            android:scaleType="center"
-                            app:srcCompat="@drawable/ic_humidity" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingStart="@dimen/cardview_horizontal_padding"
-                    android:paddingTop="@dimen/activity_vertical_margin"
-                    android:paddingEnd="@dimen/cardview_horizontal_padding"
-                    android:paddingBottom="@dimen/activity_vertical_margin">
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/carbon"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:gravity="center"
-                            android:paddingTop="@dimen/cardview_action_padding"
-                            android:textSize="16sp" />
-
-                        <androidx.appcompat.widget.AppCompatImageView
-                            android:id="@+id/carbon_img"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:contentDescription="@string/eco2_title"
-                            android:scaleType="center"
-                            app:srcCompat="@drawable/ic_co2" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/tvoc"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:gravity="center"
-                            android:paddingTop="@dimen/cardview_action_padding"
-                            android:textSize="16sp" />
-
-                        <androidx.appcompat.widget.AppCompatImageView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:contentDescription="@string/tvoc_title"
-                            android:scaleType="center"
-                            app:srcCompat="@drawable/ic_leaf" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <ImageView
-                            android:id="@+id/blob"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:layout_gravity="center_horizontal"
-                            android:contentDescription="@string/color_intensity_title"
-                            android:scaleType="center"
-                            android:src="@drawable/color_view" />
-
-                        <TextView
-                            android:id="@+id/color"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:gravity="center"
-                            android:paddingTop="@dimen/cardview_action_padding"
-                            android:textSize="16sp" />
-                    </LinearLayout>
-                </LinearLayout>
-
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:background="@color/onBackground" />
-
-                <androidx.appcompat.widget.Toolbar
-                    android:id="@+id/environment_toolbar"
-                    android:layout_width="match_parent"
-                    android:layout_height="?actionBarSize"
-                    app:logo="@drawable/ic_weather"
-                    app:popupTheme="@style/ActionBarPopupThemeOverlay"
-                    app:title="@string/environment_current_conditions_title"
-                    app:titleMarginStart="@dimen/card_view_toolbar_title_margin"
-                    app:titleTextAppearance="@style/Widget.Toolbar" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/weather_settings"
@@ -245,7 +74,8 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="end"
                     android:layout_marginEnd="16dp"
-                    android:text="@string/environment_settings_cardview" />
+                    android:text="SETTINGS"
+                    app:backgroundTint="#00BCD4" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
