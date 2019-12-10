@@ -19,9 +19,9 @@
     <string name="pressure_graph">Pressure (hPa)</string>
     <string name="humidity_graph">Humidity (%)</string>
 
-    <string name="temperature_title">Temperature</string>
-    <string name="pressure_title">Pressure</string>
-    <string name="humidity_title">Humidity</string>
+    <string name="temperature_title">Temperature (\u2103)</string>
+    <string name="pressure_title">Pressure (hPa)</string>
+    <string name="humidity_title">Humidity (%)</string>
     <string name="air_quality_title">Air quality</string>
     <string name="eco2_title">Effective CO2</string>
     <string name="tvoc_title">Total volatile organic compound</string>
