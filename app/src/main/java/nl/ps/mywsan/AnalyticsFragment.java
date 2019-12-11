@@ -27,7 +27,6 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Random;
 
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
@@ -39,13 +38,7 @@ public class AnalyticsFragment extends Fragment {
     public static final String TAG = "AnalyticsFragment";
 
     private static final int REQUEST_ENABLE_BT = 1021;
-    private static final int MAX_VISISBLE_GRAPH_ENTRIES = 300;
-    private TextView mTemperatureView;
-    private TextView mPressureView;
-    private TextView mHumidityView;
-    private TextView mCarbon;
-    private TextView mTvoc;
-    private TextView mColorView;
+    private static final int MAX_VISISBLE_GRAPH_ENTRIES = 3600;
     private TextView btn_Settings;
     private LineChart mLineChartTemperature;
     private LineChart mLineChartPressure;
@@ -85,8 +78,8 @@ public class AnalyticsFragment extends Fragment {
         viewModel = ViewModelProviders.of(this.getActivity()).get(deviceViewModel.class);
 
         viewModel.getSelectedDevices().observe(this, checkedNodes -> {
-//            prepareTemperatureMultiLines();
             Log.d(TAG, "current number of checked nodes: " + checkedNodeList.size());
+            // TEMPERATURE UPDATE ///////////////////////////////
             for (int i = 0; i < checkedNodeList.size(); i++) {
                 // always remove the first one, index=0, as after removing one dataset, the other datasets will be shifted
                 Boolean isDataSetRemoved = mLineChartTemperature.getData().removeDataSet(0);
@@ -100,10 +93,41 @@ public class AnalyticsFragment extends Fragment {
             Log.d(TAG, "preparing for a new set checked nodes of " + checkedNodes.size());
             checkedNodeList = checkedNodes;
             Log.d(TAG, "... getSelectedDevices =" + checkedNodeList.size());
-//            prepareTemperatureMultiLines();
-            prepareTemperatureMultiLines_V2();
+            prepareTemperatureMultiLines();
             Log.d(TAG, "getSelectedDevices().observe::mLineChartTemperature.getData().getDataSets()" + mLineChartTemperature.getData().getDataSets());
+            // PRESSURE UPDATE ///////////////////////////////
+            for (int i = 0; i < checkedNodeList.size(); i++) {
+                // always remove the first one, index=0, as after removing one dataset, the other datasets will be shifted
+                Boolean isDataSetRemoved = mLineChartPressure.getData().removeDataSet(0);
+                Log.d(TAG, "mLineChartPressure.getData().removeDataSet(" + i + ") = " + isDataSetRemoved);
+                // must notify the chart
+                mLineChartPressure.notifyDataSetChanged();
+                mLineChartPressure.invalidate(); // refresh the chart
+            }
+            Log.d(TAG, "getSelectedDevices().observe::mLineChartPressure.getData().getDataSets()" + mLineChartPressure.getData().getDataSets());
+            // Reset the graph
+            Log.d(TAG, "preparing for a new set checked nodes of " + checkedNodes.size());
+            checkedNodeList = checkedNodes;
+            Log.d(TAG, "... getSelectedDevices =" + checkedNodeList.size());
+            preparePressureMultiLines();
+            Log.d(TAG, "getSelectedDevices().observe::mLineChartPressure.getData().getDataSets()" + mLineChartPressure.getData().getDataSets());
 
+            // HUMIDITY UPDATE ///////////////////////////////
+            for (int i = 0; i < checkedNodeList.size(); i++) {
+                // always remove the first one, index=0, as after removing one dataset, the other datasets will be shifted
+                Boolean isDataSetRemoved = mLineChartHumidity.getData().removeDataSet(0);
+                Log.d(TAG, "mLineChartHumidity.getData().removeDataSet(" + i + ") = " + isDataSetRemoved);
+                // must notify the chart
+                mLineChartHumidity.notifyDataSetChanged();
+                mLineChartHumidity.invalidate(); // refresh the chart
+            }
+            Log.d(TAG, "getSelectedDevices().observe::mLineChartHumidity.getData().getDataSets()" + mLineChartHumidity.getData().getDataSets());
+            // Reset the graph
+            Log.d(TAG, "preparing for a new set checked nodes of " + checkedNodes.size());
+            checkedNodeList = checkedNodes;
+            Log.d(TAG, "... getSelectedDevices =" + checkedNodeList.size());
+            prepareHumidityMultiLines();
+            Log.d(TAG, "getSelectedDevices().observe::mLineChartHumidity.getData().getDataSets()" + mLineChartHumidity.getData().getDataSets());
 
         });
 
@@ -114,7 +138,6 @@ public class AnalyticsFragment extends Fragment {
             }
         });
 
-//        plotSavedTemperatureEntry();
     }
 
     public void displayDetails(Node node) {
@@ -131,26 +154,15 @@ public class AnalyticsFragment extends Fragment {
         final View rootView = inflater.inflate(R.layout.fragment_environment, viewGroup, false);
         final Toolbar toolbarEnvironment = rootView.findViewById(R.id.environment_toolbar);
 
-        mTemperatureView = rootView.findViewById(R.id.temperature);
-        mPressureView = rootView.findViewById(R.id.pressure);
-        mHumidityView = rootView.findViewById(R.id.humidity);
-        mCarbon = rootView.findViewById(R.id.carbon);
-        mTvoc = rootView.findViewById(R.id.tvoc);
-        mColorView = rootView.findViewById(R.id.color);
         btn_Settings = rootView.findViewById(R.id.weather_settings);
 
         mLineChartTemperature = rootView.findViewById(R.id.line_chart_temperature);
         mLineChartPressure = rootView.findViewById(R.id.line_chart_pressure);
         mLineChartHumidity = rootView.findViewById(R.id.line_chart_humidity);
 
-//        prepareTemperatureGraph();
-        preparePressureGraph();
-        prepareHumidityGraph();
-
-//        prepareTemperatureMultiLines();
-        prepareTemperatureMultiLines_V2();
-
-//        plotSavedTemperatureEntry();
+        prepareTemperatureMultiLines();
+        preparePressureMultiLines();
+        prepareHumidityMultiLines();
 
         // use a timer to update graph
         Thread t = new Thread() {
@@ -159,21 +171,20 @@ public class AnalyticsFragment extends Fragment {
             public void run() {
                 try {
                     while (!isInterrupted()) {
-                        Thread.sleep(10000);
+                        Thread.sleep(1000);
                         if (getActivity() != null) {
                             getActivity().runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-//                                    plotSavedTemperatureData();
-//                                    plotSavedTemperatureEntry();
-//                                    plotSavedTemperatureMultiLines();
-//                                    plotSavedTemperatureMultiEntries();
-//                                    prepareTemperatureMultiLines();
-//                                    prepareTemperatureMultiLines_V2();
-
+//
+                                    handleGraphUpdates(mLineChartTemperature);
                                     updateTemperatureValuesMultiLines();
-//                                    updateSavedTemperatureValuesMultiLines();
 
+                                    handleGraphUpdates(mLineChartPressure);
+                                    updatePressureValuesMultiLines();
+
+                                    handleGraphUpdates(mLineChartHumidity);
+                                    updateHumidityValuesMultiLines();
                                 }
                             });
                         }
@@ -188,54 +199,8 @@ public class AnalyticsFragment extends Fragment {
         return rootView;
     }
 
-    // prepare mulitple lines
-    // plot multiple lines
-    private void prepareTemperatureMultiLines() {
-        String timestamp = new SimpleDateFormat("yyyyMMdd_HH:mm:ss:SSS", Locale.getDefault()).format(new Date());
-
-        // use the interface ILineDataSet
-        LineData data = null;
-
-        List<ILineDataSet> dataSets = new ArrayList<ILineDataSet>();
-        for (int i = 0; i < checkedNodeList.size(); i++) {
-            List<Entry> valsCompi = new ArrayList<Entry>();
-            final float temperature1 = (new Random().nextInt((4000 - 1000) + 1) + 0) / 100f;
-            final Entry cie1 = new Entry(temperature1, 0); // 0 == quarter 1
-            valsCompi.add(cie1);
-            final float temperature2 = (new Random().nextInt((4000 - 1000) + 1) + 0) / 100f;
-            final Entry cie2 = new Entry(temperature2, 1); // 1 == quarter 2 ...
-            valsCompi.add(cie2);
-            LineDataSet setCompi = new LineDataSet(valsCompi, String.valueOf(checkedNodeList.get(i).getConnHandle()));
-            setCompi.setAxisDependency(YAxis.AxisDependency.LEFT);
-            dataSets.add(setCompi);
-        }
-
-        List<String> xVals = new ArrayList<>();
-        xVals.add(new SimpleDateFormat("yyyyMMdd_HH:mm:ss:SSS", Locale.getDefault()).format(new Date()));
-        xVals.add(new SimpleDateFormat("yyyyMMdd_HH:mm:ss:SSS", Locale.getDefault()).format(new Date()));
-
-        data = new LineData(xVals, dataSets);
-        mLineChartTemperature.setData(data);
-        mLineChartTemperature.invalidate(); // refresh
-        mLineChartTemperature.moveViewToX(data.getXValCount() - 11);
-
-        if (checkedNodeList.size() > 0) {
-            data = mLineChartTemperature.getData();
-            Log.d(TAG, "After first 2 entries added:");
-            Log.d(TAG, "data.getXValCount() = " + data.getXValCount());
-            Log.d(TAG, "data.getYValCount() = " + data.getYValCount());
-            Log.d(TAG, "data.getDataSets().size()= " + data.getDataSets().size());
-            for (int i = 0; i < data.getDataSets().size(); i++) {
-                for (int j = 0; j < data.getDataSetByIndex(i).getEntryCount(); j++) {
-                    Log.d(TAG, "data.getDataSetByIndex(i).getEntriesForXIndex(j)= " + data.getDataSetByIndex(i).getEntriesForXIndex(j));
-                }
-            }
-        }
-
-    }
-
     // add color and axes' titles
-    private void prepareTemperatureMultiLines_V2() {
+    private void prepareTemperatureMultiLines() {
 
         // set up the chart view
         if (!mLineChartTemperature.isEmpty()) {
@@ -253,8 +218,6 @@ public class AnalyticsFragment extends Fragment {
         mLineChartTemperature.setDrawGridBackground(false);
         mLineChartTemperature.setBackgroundColor(Color.WHITE);
 
-        String timestamp = new SimpleDateFormat("yyyyMMdd_HH:mm:ss:SSS", Locale.getDefault()).format(new Date());
-
         // use the interface ILineDataSet
         LineData data = null;
 
@@ -269,7 +232,7 @@ public class AnalyticsFragment extends Fragment {
 //            final float temperature = (new Random().nextInt((4000 - 1000) + 1) + 0) / 100f;
             final Entry cie = new Entry(temperature, 0); // 0 == quarter 1
             valsCompi.add(cie);
-            LineDataSet setCompi = new LineDataSet(valsCompi, String.valueOf(checkedNodeList.get(i).getConnHandle()));
+            LineDataSet setCompi = new LineDataSet(valsCompi, checkedNodeList.get(i).getName() + ":" + checkedNodeList.get(i).getClusterID() + "." + checkedNodeList.get(i).getLocalNodeID());
             setCompi.setAxisDependency(YAxis.AxisDependency.LEFT);
             switch (i) {
                 case 0:
@@ -305,7 +268,7 @@ public class AnalyticsFragment extends Fragment {
             }
             setCompi.setFillColor(ContextCompat.getColor(requireContext(), R.color.accent));
             setCompi.setHighLightColor(ContextCompat.getColor(requireContext(), R.color.accent));
-            setCompi.setValueFormatter(new TemperatureChartValueFormatter());
+            setCompi.setValueFormatter(new ChartXValueFormatter());
             setCompi.setDrawValues(true);
             setCompi.setDrawCircles(true);
             setCompi.setDrawCircleHole(false);
@@ -316,14 +279,13 @@ public class AnalyticsFragment extends Fragment {
             dataSets.add(setCompi);
 
         }
-        temperatureData.clear();
 
         List<String> xVals = new ArrayList<>();
 //        xVals.add(new SimpleDateFormat("yyyyMMdd_HH:mm:ss:SSS", Locale.getDefault()).format(new Date()));
-        xVals.add(new SimpleDateFormat("yyyyMMdd_HH:mm:ss:SSS", Locale.getDefault()).format(new Date()));
+        xVals.add(new SimpleDateFormat("HH:mm:ss:SSS", Locale.getDefault()).format(new Date()));
 
         data = new LineData(xVals, dataSets);
-        data.setValueFormatter(new TemperatureChartValueFormatter());
+        data.setValueFormatter(new ChartXValueFormatter());
         data.setValueTextColor(Color.BLUE);
         mLineChartTemperature.setData(data);
 
@@ -358,21 +320,24 @@ public class AnalyticsFragment extends Fragment {
             Log.d(TAG, "data.getXValCount() = " + data.getXValCount());
             Log.d(TAG, "data.getYValCount() = " + data.getYValCount());
             Log.d(TAG, "data.getDataSets().size()= " + data.getDataSets().size());
-            for (int i = 0; i < data.getDataSets().size(); i++) {
-                for (int j = 0; j < data.getDataSetByIndex(i).getEntryCount(); j++) {
-                    Log.d(TAG, "data.getDataSetByIndex(i).getEntriesForXIndex(j)= " + data.getDataSetByIndex(i).getEntriesForXIndex(j));
-                }
-            }
+//            for (int i = 0; i < data.getDataSets().size(); i++) {
+//                for (int j = 0; j < data.getDataSetByIndex(i).getEntryCount(); j++) {
+//                    Log.d(TAG, "data.getDataSetByIndex(i).getEntriesForXIndex(j)= " + data.getDataSetByIndex(i).getEntriesForXIndex(j));
+//                }
+//            }
         }
+
+        temperatureData.clear();
 
     }
 
     // plot udpate values for multiple lines
     private void updateTemperatureValuesMultiLines() {
-        String timestamp = new SimpleDateFormat("yyyyMMdd_HH:mm:ss:SSS", Locale.getDefault()).format(new Date());
+        String timestamp = new SimpleDateFormat("HH:mm:ss:SSS", Locale.getDefault()).format(new Date());
 
         // use the interface ILineDataSet
         LineData data = mLineChartTemperature.getData();
+
 
         if (data != null) {
             List<ILineDataSet> updateDataSets = new ArrayList<ILineDataSet>();
@@ -381,16 +346,16 @@ public class AnalyticsFragment extends Fragment {
             // debug dataSets
             if (checkedNodeList.size() > 0) {
                 data = mLineChartTemperature.getData();
-                Log.d(TAG, "After first 2 entries added:");
+                Log.d(TAG, "Before adding a new entry:");
                 Log.d(TAG, "data.getXValCount() = " + data.getXValCount());
                 Log.d(TAG, "data.getYValCount() = " + data.getYValCount());
                 Log.d(TAG, "data.getDataSets().size()= " + data.getDataSets().size());
-                for (int i = 0; i < data.getDataSets().size(); i++) {
-                    for (int j = 0; j < data.getDataSetByIndex(i).getEntryCount(); j++) {
-                        Log.d(TAG, "data.getDataSetByIndex(i).getEntriesForXIndex(j)= " + data.getDataSetByIndex(i).getEntriesForXIndex(j));
-                    }
-                }
-            }
+//                for (int i = 0; i < data.getDataSets().size(); i++) {
+//                    for (int j = 0; j < data.getDataSetByIndex(i).getEntryCount(); j++) {
+//                        Log.d(TAG, "data.getDataSetByIndex(i).getEntriesForXIndex(j)= " + data.getDataSetByIndex(i).getEntriesForXIndex(j));
+//                    }
+//                }
+
             for (int i = 0; i < data.getDataSetCount(); i++) {
                 Node plottingNode = checkedNodeList.get(i);
                 temperatureData = db.getNodeTemperatures(plottingNode.getConnHandle(), 2);
@@ -398,8 +363,8 @@ public class AnalyticsFragment extends Fragment {
                 final float temperature = Float.parseFloat(temperatureData.get(timestamp_i)) / 100f;
                 // debug with random temperature values
 //                final float temperature = (new Random().nextInt(((4000 - 1000) + 1)) / 100f;
-                final Entry cie1 = new Entry(temperature, data.getXValCount()); // 0 == quarter 1
-                updateDataSets.get(i).addEntry(cie1);
+                final Entry cie = new Entry(temperature, data.getXValCount()); // 0 == quarter 1
+                updateDataSets.get(i).addEntry(cie);
 
                 final YAxis leftAxis = mLineChartTemperature.getAxisLeft();
 
@@ -414,9 +379,12 @@ public class AnalyticsFragment extends Fragment {
             mLineChartTemperature.notifyDataSetChanged();
             mLineChartTemperature.setVisibleXRangeMaximum(10);
 
+                Log.d(TAG, "data.getXValCount() = " + data.getXValCount());
+                Log.d(TAG, "mLineChartTemperature.getHighestVisibleXIndex() = " + mLineChartTemperature.getHighestVisibleXIndex());
             if (data.getXValCount() >= 10) {
                 final int highestVisibleIndex = mLineChartTemperature.getHighestVisibleXIndex();
                 if ((data.getXValCount() - 10) < highestVisibleIndex) {
+                    Log.d(TAG, "mLineChartTemperature.moveViewToX = " + (data.getXValCount() - 11));
                     mLineChartTemperature.moveViewToX(data.getXValCount() - 11);
                 } else {
                     mLineChartTemperature.invalidate();
@@ -424,46 +392,477 @@ public class AnalyticsFragment extends Fragment {
             } else {
                 mLineChartTemperature.invalidate();
             }
-            mLineChartTemperature.moveViewToX(data.getXValCount() - 11);
 
             // recheck data after updating new entry
             // debug, recheck data adding
-            if (checkedNodeList.size() > 0) {
-                data = mLineChartTemperature.getData();
-                Log.d(TAG, "After first the new entries added:");
-                Log.d(TAG, "data.getXValCount() = " + data.getXValCount());
-                Log.d(TAG, "data.getYValCount() = " + data.getYValCount());
-                Log.d(TAG, "data.getDataSets().size()= " + data.getDataSets().size());
-                for (int i = 0; i < data.getDataSets().size(); i++) {
-                    for (int j = 0; j < data.getDataSetByIndex(i).getEntryCount(); j++) {
-                        Log.d(TAG, "data.getDataSetByIndex(i).getEntriesForXIndex(j)= " + data.getDataSetByIndex(i).getEntriesForXIndex(j));
-                    }
-                }
+//            if (checkedNodeList.size() > 0) {
+//                data = mLineChartTemperature.getData();
+//                Log.d(TAG, "After first the new entries added:");
+//                Log.d(TAG, "data.getXValCount() = " + data.getXValCount());
+//                Log.d(TAG, "data.getYValCount() = " + data.getYValCount());
+//                Log.d(TAG, "data.getDataSets().size()= " + data.getDataSets().size());
+//                for (int i = 0; i < data.getDataSets().size(); i++) {
+//                    for (int j = 0; j < data.getDataSetByIndex(i).getEntryCount(); j++) {
+//                        Log.d(TAG, "data.getDataSetByIndex(i).getEntriesForXIndex(j)= " + data.getDataSetByIndex(i).getEntriesForXIndex(j));
+//                    }
+//                }
+//            }
             }
+
+            temperatureData.clear(); // to keep getHighestVisibleXIndex updated so that 11 xValues are displayed
         }
 
     }
 
+    //////////////////  PRESSURE GRAPH
+    // add color and axes' titles
+    private void preparePressureMultiLines() {
+        // set up the chart view
+        if (!mLineChartPressure.isEmpty()) {
+            mLineChartPressure.getData().getXVals().clear();
+            mLineChartPressure.clearValues();
+        }
+        mLineChartPressure.setDescription(getString(R.string.time));
+        mLineChartPressure.setTouchEnabled(true);
+        mLineChartPressure.setVisibleXRangeMinimum(5);
+        // enable scaling and dragging
+        mLineChartPressure.setDragEnabled(true);
+        mLineChartPressure.setPinchZoom(true);
+        mLineChartPressure.setScaleEnabled(true);
+        mLineChartPressure.setAutoScaleMinMaxEnabled(true);
+        mLineChartPressure.setDrawGridBackground(false);
+        mLineChartPressure.setBackgroundColor(Color.WHITE);
 
-    private synchronized void handleTemperatureGraphUpdates(LineChart lineChart) {
-        final LineData lineData = lineChart.getData();
+        // use the interface ILineDataSet
+        LineData data = null;
 
-        if (lineData.getXVals().size() > MAX_VISISBLE_GRAPH_ENTRIES) {
-            ILineDataSet set = lineData.getDataSetByIndex(0);
-            if (set != null) {
-                if (set.removeFirst()) {
-                    lineData.removeXValue(0);
-                    final List xValues = lineData.getXVals();
-                    for (int i = 0; i < xValues.size(); i++) {
-                        Entry entry = set.getEntryForIndex(i);
-                        if (entry != null) {
-                            entry.setXIndex(i);
-                            entry.setVal(entry.getVal());
-                        }
+        List<ILineDataSet> dataSets = new ArrayList<ILineDataSet>();
+        LinkedHashMap<String, String> pressureData = new LinkedHashMap<String, String>();
+        for (int i = 0; i < checkedNodeList.size(); i++) {
+            List<Entry> valsCompi = new ArrayList<Entry>();
+            Node plottingNode = checkedNodeList.get(i);
+            pressureData = db.getNodePressures(plottingNode.getConnHandle(), 2);
+            String timestamp_i = pressureData.keySet().toArray()[pressureData.size() - 1].toString();
+            final int pressureValue = Integer.parseInt(pressureData.get(timestamp_i));
+//            final float temperature = (new Random().nextInt((4000 - 1000) + 1) + 0) / 100f;
+            final Entry cie = new Entry(pressureValue, 0); // 0 == quarter 1
+            valsCompi.add(cie);
+            LineDataSet setCompi = new LineDataSet(valsCompi, checkedNodeList.get(i).getName() + ":" + checkedNodeList.get(i).getClusterID() + "." + checkedNodeList.get(i).getLocalNodeID());
+            setCompi.setAxisDependency(YAxis.AxisDependency.LEFT);
+            switch (i) {
+                case 0:
+                    setCompi.setColor(ContextCompat.getColor(requireContext(), R.color.red));
+                    break;
+                case 1:
+                    setCompi.setColor(ContextCompat.getColor(requireContext(), R.color.orange));
+                    break;
+                case 2:
+                    setCompi.setColor(ContextCompat.getColor(requireContext(), R.color.yellow));
+                    break;
+                case 3:
+                    setCompi.setColor(ContextCompat.getColor(requireContext(), R.color.blue));
+                    break;
+                case 4:
+                    setCompi.setColor(ContextCompat.getColor(requireContext(), R.color.green));
+                    break;
+                case 5:
+                    setCompi.setColor(ContextCompat.getColor(requireContext(), R.color.purple));
+                    break;
+                case 6:
+                    setCompi.setColor(ContextCompat.getColor(requireContext(), R.color.grey));
+                    break;
+                case 7:
+                    setCompi.setColor(ContextCompat.getColor(requireContext(), R.color.brown));
+                    break;
+                case 8:
+                    setCompi.setColor(ContextCompat.getColor(requireContext(), R.color.black));
+                    break;
+                default:
+                    setCompi.setColor(ContextCompat.getColor(requireContext(), R.color.black));
+                    break;
+            }
+            setCompi.setFillColor(ContextCompat.getColor(requireContext(), R.color.accent));
+            setCompi.setHighLightColor(ContextCompat.getColor(requireContext(), R.color.accent));
+            setCompi.setValueFormatter(new ChartXValueFormatter());
+            setCompi.setDrawValues(true);
+            setCompi.setDrawCircles(true);
+            setCompi.setDrawCircleHole(false);
+            setCompi.setValueTextSize(Utils.CHART_VALUE_TEXT_SIZE);
+            setCompi.setLineWidth(Utils.CHART_LINE_WIDTH);
+
+
+            dataSets.add(setCompi);
+
+        }
+
+
+        List<String> xVals = new ArrayList<>();
+//        xVals.add(new SimpleDateFormat("yyyyMMdd_HH:mm:ss:SSS", Locale.getDefault()).format(new Date()));
+        xVals.add(new SimpleDateFormat("HH:mm:ss:SSS", Locale.getDefault()).format(new Date()));
+
+        data = new LineData(xVals, dataSets);
+        data.setValueFormatter(new ChartXValueFormatter());
+        data.setValueTextColor(Color.BLUE);
+        mLineChartPressure.setData(data);
+
+        Legend legend = mLineChartPressure.getLegend();
+        legend.setForm(Legend.LegendForm.LINE);
+        legend.setTextColor(Color.BLACK);
+
+        XAxis xAxis = mLineChartPressure.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setTextColor(Color.BLACK);
+        xAxis.setDrawGridLines(false);
+        xAxis.setAvoidFirstLastClipping(true);
+
+        YAxis leftAxis = mLineChartPressure.getAxisLeft();
+        leftAxis.setDrawZeroLine(true);
+        leftAxis.setTextColor(Color.BLACK);
+        leftAxis.setValueFormatter(new PressureChartYValueFormatter());
+        leftAxis.setDrawLabels(true);
+        leftAxis.setAxisMinValue(700f);
+        leftAxis.setAxisMaxValue(1100f);
+        leftAxis.setLabelCount(10, false); //
+
+        YAxis rightAxis = mLineChartPressure.getAxisRight();
+        rightAxis.setEnabled(false);
+
+        mLineChartPressure.invalidate(); // refresh
+        mLineChartPressure.moveViewToX(data.getXValCount() - 11);
+
+        if (checkedNodeList.size() > 0) {
+            data = mLineChartPressure.getData();
+            Log.d(TAG, "After first 2 entries added:");
+            Log.d(TAG, "data.getXValCount() = " + data.getXValCount());
+            Log.d(TAG, "data.getYValCount() = " + data.getYValCount());
+            Log.d(TAG, "data.getDataSets().size()= " + data.getDataSets().size());
+//            for (int i = 0; i < data.getDataSets().size(); i++) {
+//                for (int j = 0; j < data.getDataSetByIndex(i).getEntryCount(); j++) {
+//                    Log.d(TAG, "data.getDataSetByIndex(i).getEntriesForXIndex(j)= " + data.getDataSetByIndex(i).getEntriesForXIndex(j));
+//                }
+//            }
+        }
+
+        pressureData.clear();
+
+    }
+
+    // plot udpate values for multiple lines
+    private void updatePressureValuesMultiLines() {
+        String timestamp = new SimpleDateFormat("HH:mm:ss:SSS", Locale.getDefault()).format(new Date());
+
+        // use the interface ILineDataSet
+        LineData data = mLineChartPressure.getData();
+
+
+        if (data != null) {
+            List<ILineDataSet> updateDataSets = new ArrayList<ILineDataSet>();
+            updateDataSets = data.getDataSets();
+            LinkedHashMap<String, String> pressureData = new LinkedHashMap<String, String>();
+            // debug dataSets
+            if (checkedNodeList.size() > 0) {
+                data = mLineChartPressure.getData();
+                Log.d(TAG, "Before adding a new entry:");
+                Log.d(TAG, "data.getXValCount() = " + data.getXValCount());
+                Log.d(TAG, "data.getYValCount() = " + data.getYValCount());
+                Log.d(TAG, "data.getDataSets().size()= " + data.getDataSets().size());
+//                for (int i = 0; i < data.getDataSets().size(); i++) {
+//                    for (int j = 0; j < data.getDataSetByIndex(i).getEntryCount(); j++) {
+//                        Log.d(TAG, "data.getDataSetByIndex(i).getEntriesForXIndex(j)= " + data.getDataSetByIndex(i).getEntriesForXIndex(j));
+//                    }
+//                }
+
+                for (int i = 0; i < data.getDataSetCount(); i++) {
+                    Node plottingNode = checkedNodeList.get(i);
+                    pressureData = db.getNodePressures(plottingNode.getConnHandle(), 2);
+                    String timestamp_i = pressureData.keySet().toArray()[pressureData.size() - 1].toString();
+                    final int pressureValue = Integer.parseInt(pressureData.get(timestamp_i));
+                    // debug with random temperature values
+//                final float temperature = (new Random().nextInt(((4000 - 1000) + 1)) / 100f;
+                    final Entry cie = new Entry(pressureValue, data.getXValCount()); // 0 == quarter 1
+                    updateDataSets.get(i).addEntry(cie);
+
+                    final YAxis leftAxis = mLineChartPressure.getAxisLeft();
+
+                    if (pressureValue < 700 && pressureValue > 600 && mLineChartPressure.getAxisLeft().getAxisMinimum() > 600) {
+                        mLineChartPressure.getAxisLeft().setAxisMinValue(600);
+                        mLineChartPressure.getAxisLeft().setZeroLineColor(ContextCompat.getColor(requireContext(), R.color.nordicBlue));
+                    } else if (pressureValue < 600 && pressureValue > 500 && mLineChartPressure.getAxisLeft().getAxisMinimum() > 500) {
+                        mLineChartPressure.getAxisLeft().setAxisMinValue(500);
                     }
-                    lineData.notifyDataChanged();
+                }
+                data.addXValue(timestamp);
+
+                mLineChartPressure.notifyDataSetChanged();
+                mLineChartPressure.setVisibleXRangeMaximum(10);
+
+                Log.d(TAG, "data.getXValCount() = " + data.getXValCount());
+                Log.d(TAG, "mLineChartPressure.getHighestVisibleXIndex() = " + mLineChartPressure.getHighestVisibleXIndex());
+                if (data.getXValCount() >= 10) {
+                    final int highestVisibleIndex = mLineChartPressure.getHighestVisibleXIndex();
+                    if ((data.getXValCount() - 10) < highestVisibleIndex) {
+                        Log.d(TAG, "mLineChartPressure.moveViewToX = " + (data.getXValCount() - 11));
+                        mLineChartPressure.moveViewToX(data.getXValCount() - 11);
+                    } else {
+                        mLineChartPressure.invalidate();
+                    }
+                } else {
+                    mLineChartPressure.invalidate();
+                }
+
+                // recheck data after updating new entry
+                // debug, recheck data adding
+//            if (checkedNodeList.size() > 0) {
+//                data = mLineChartPressure.getData();
+//                Log.d(TAG, "After first the new entries added:");
+//                Log.d(TAG, "data.getXValCount() = " + data.getXValCount());
+//                Log.d(TAG, "data.getYValCount() = " + data.getYValCount());
+//                Log.d(TAG, "data.getDataSets().size()= " + data.getDataSets().size());
+//                for (int i = 0; i < data.getDataSets().size(); i++) {
+//                    for (int j = 0; j < data.getDataSetByIndex(i).getEntryCount(); j++) {
+//                        Log.d(TAG, "data.getDataSetByIndex(i).getEntriesForXIndex(j)= " + data.getDataSetByIndex(i).getEntriesForXIndex(j));
+//                    }
+//                }
+//            }
+            }
+
+            pressureData.clear(); // to keep getHighestVisibleXIndex updated so that 11 xValues are displayed
+        }
+
+    }
+    //////////////////
+
+    //////////////////  HUMIDITY GRAPH
+    // add color and axes' titles
+    private void prepareHumidityMultiLines() {
+        // set up the chart view
+        if (!mLineChartHumidity.isEmpty()) {
+            mLineChartHumidity.getData().getXVals().clear();
+            mLineChartHumidity.clearValues();
+        }
+        mLineChartHumidity.setDescription(getString(R.string.time));
+        mLineChartHumidity.setTouchEnabled(true);
+        mLineChartHumidity.setVisibleXRangeMinimum(5);
+        // enable scaling and dragging
+        mLineChartHumidity.setDragEnabled(true);
+        mLineChartHumidity.setPinchZoom(true);
+        mLineChartHumidity.setScaleEnabled(true);
+        mLineChartHumidity.setAutoScaleMinMaxEnabled(true);
+        mLineChartHumidity.setDrawGridBackground(false);
+        mLineChartHumidity.setBackgroundColor(Color.WHITE);
+
+        // use the interface ILineDataSet
+        LineData data = null;
+
+        List<ILineDataSet> dataSets = new ArrayList<ILineDataSet>();
+        LinkedHashMap<String, String> humidityData = new LinkedHashMap<String, String>();
+        for (int i = 0; i < checkedNodeList.size(); i++) {
+            List<Entry> valsCompi = new ArrayList<Entry>();
+            Node plottingNode = checkedNodeList.get(i);
+            humidityData = db.getNodeHumidity(plottingNode.getConnHandle(), 2);
+            String timestamp_i = humidityData.keySet().toArray()[humidityData.size() - 1].toString();
+            final int humidityValue = Integer.parseInt(humidityData.get(timestamp_i));
+//            final float temperature = (new Random().nextInt((4000 - 1000) + 1) + 0) / 100f;
+            final Entry cie = new Entry(humidityValue, 0); // 0 == quarter 1
+            valsCompi.add(cie);
+            LineDataSet setCompi = new LineDataSet(valsCompi, checkedNodeList.get(i).getName() + ":" + checkedNodeList.get(i).getClusterID() + "." + checkedNodeList.get(i).getLocalNodeID());
+            setCompi.setAxisDependency(YAxis.AxisDependency.LEFT);
+            switch (i) {
+                case 0:
+                    setCompi.setColor(ContextCompat.getColor(requireContext(), R.color.red));
+                    break;
+                case 1:
+                    setCompi.setColor(ContextCompat.getColor(requireContext(), R.color.orange));
+                    break;
+                case 2:
+                    setCompi.setColor(ContextCompat.getColor(requireContext(), R.color.yellow));
+                    break;
+                case 3:
+                    setCompi.setColor(ContextCompat.getColor(requireContext(), R.color.blue));
+                    break;
+                case 4:
+                    setCompi.setColor(ContextCompat.getColor(requireContext(), R.color.green));
+                    break;
+                case 5:
+                    setCompi.setColor(ContextCompat.getColor(requireContext(), R.color.purple));
+                    break;
+                case 6:
+                    setCompi.setColor(ContextCompat.getColor(requireContext(), R.color.grey));
+                    break;
+                case 7:
+                    setCompi.setColor(ContextCompat.getColor(requireContext(), R.color.brown));
+                    break;
+                case 8:
+                    setCompi.setColor(ContextCompat.getColor(requireContext(), R.color.black));
+                    break;
+                default:
+                    setCompi.setColor(ContextCompat.getColor(requireContext(), R.color.black));
+                    break;
+            }
+            setCompi.setFillColor(ContextCompat.getColor(requireContext(), R.color.accent));
+            setCompi.setHighLightColor(ContextCompat.getColor(requireContext(), R.color.accent));
+            setCompi.setValueFormatter(new ChartXValueFormatter());
+            setCompi.setDrawValues(true);
+            setCompi.setDrawCircles(true);
+            setCompi.setDrawCircleHole(false);
+            setCompi.setValueTextSize(Utils.CHART_VALUE_TEXT_SIZE);
+            setCompi.setLineWidth(Utils.CHART_LINE_WIDTH);
+
+
+            dataSets.add(setCompi);
+
+        }
+
+        List<String> xVals = new ArrayList<>();
+//        xVals.add(new SimpleDateFormat("yyyyMMdd_HH:mm:ss:SSS", Locale.getDefault()).format(new Date()));
+        xVals.add(new SimpleDateFormat("HH:mm:ss:SSS", Locale.getDefault()).format(new Date()));
+
+        data = new LineData(xVals, dataSets);
+        data.setValueFormatter(new ChartXValueFormatter());
+        data.setValueTextColor(Color.BLUE);
+        mLineChartHumidity.setData(data);
+
+        Legend legend = mLineChartHumidity.getLegend();
+        legend.setForm(Legend.LegendForm.LINE);
+        legend.setTextColor(Color.BLACK);
+
+        XAxis xAxis = mLineChartHumidity.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setTextColor(Color.BLACK);
+        xAxis.setDrawGridLines(false);
+        xAxis.setAvoidFirstLastClipping(true);
+
+        YAxis leftAxis = mLineChartHumidity.getAxisLeft();
+        leftAxis.setDrawZeroLine(true);
+        leftAxis.setTextColor(Color.BLACK);
+        leftAxis.setValueFormatter(new PressureChartYValueFormatter());
+        leftAxis.setDrawLabels(true);
+        leftAxis.setAxisMinValue(0);
+        leftAxis.setAxisMaxValue(100);
+        leftAxis.setLabelCount(6, false); //
+
+        YAxis rightAxis = mLineChartHumidity.getAxisRight();
+        rightAxis.setEnabled(false);
+
+        mLineChartHumidity.invalidate(); // refresh
+        mLineChartHumidity.moveViewToX(data.getXValCount() - 11);
+
+        if (checkedNodeList.size() > 0) {
+            data = mLineChartHumidity.getData();
+            Log.d(TAG, "After first entry added:");
+            Log.d(TAG, "data.getXValCount() = " + data.getXValCount());
+            Log.d(TAG, "data.getYValCount() = " + data.getYValCount());
+            Log.d(TAG, "data.getDataSets().size()= " + data.getDataSets().size());
+            for (int i = 0; i < data.getDataSets().size(); i++) {
+                for (int j = 0; j < data.getDataSetByIndex(i).getEntryCount(); j++) {
+                    Log.d(TAG, "data.getDataSetByIndex(i).getEntriesForXIndex(j)= " + data.getDataSetByIndex(i).getEntriesForXIndex(j));
                 }
             }
+        }
+
+        humidityData.clear();
+
+    }
+
+    // plot udpate values for multiple lines
+    private void updateHumidityValuesMultiLines() {
+        String timestamp = new SimpleDateFormat("HH:mm:ss:SSS", Locale.getDefault()).format(new Date());
+
+        // use the interface ILineDataSet
+        LineData data = mLineChartHumidity.getData();
+
+
+        if (data != null) {
+            List<ILineDataSet> updateDataSets = new ArrayList<ILineDataSet>();
+            updateDataSets = data.getDataSets();
+            LinkedHashMap<String, String> humidityData = new LinkedHashMap<String, String>();
+            // debug dataSets
+            if (checkedNodeList.size() > 0) {
+                data = mLineChartHumidity.getData();
+                Log.d(TAG, "Before adding a new entry:");
+                Log.d(TAG, "data.getXValCount() = " + data.getXValCount());
+                Log.d(TAG, "data.getYValCount() = " + data.getYValCount());
+                Log.d(TAG, "data.getDataSets().size()= " + data.getDataSets().size());
+//                for (int i = 0; i < data.getDataSets().size(); i++) {
+//                    for (int j = 0; j < data.getDataSetByIndex(i).getEntryCount(); j++) {
+//                        Log.d(TAG, "data.getDataSetByIndex(i).getEntriesForXIndex(j)= " + data.getDataSetByIndex(i).getEntriesForXIndex(j));
+//                    }
+//                }
+
+                for (int i = 0; i < data.getDataSetCount(); i++) {
+                    Node plottingNode = checkedNodeList.get(i);
+                    humidityData = db.getNodeHumidity(plottingNode.getConnHandle(), 2);
+                    String timestamp_i = humidityData.keySet().toArray()[humidityData.size() - 1].toString();
+                    final int humidityValues = Integer.parseInt(humidityData.get(timestamp_i));
+                    // debug with random temperature values
+//                final float temperature = (new Random().nextInt(((4000 - 1000) + 1)) / 100f;
+                    final Entry cie1 = new Entry(humidityValues, data.getXValCount()); // 0 == quarter 1
+                    updateDataSets.get(i).addEntry(cie1);
+
+                }
+                data.addXValue(timestamp);
+
+                mLineChartHumidity.notifyDataSetChanged();
+                mLineChartHumidity.setVisibleXRangeMaximum(10);
+
+                Log.d(TAG, "data.getXValCount() = " + data.getXValCount());
+                Log.d(TAG, "mLineChartHumidity.getHighestVisibleXIndex() = " + mLineChartHumidity.getHighestVisibleXIndex());
+                if (data.getXValCount() >= 10) {
+                    final int highestVisibleIndex = mLineChartHumidity.getHighestVisibleXIndex();
+                    if ((data.getXValCount() - 10) < highestVisibleIndex) {
+                        Log.d(TAG, "mLineChartHumidity.moveViewToX = " + (data.getXValCount() - 11));
+                        mLineChartHumidity.moveViewToX(data.getXValCount() - 11);
+                    } else {
+                        mLineChartHumidity.invalidate();
+                    }
+                } else {
+                    mLineChartHumidity.invalidate();
+                }
+
+                // recheck data after updating new entry
+                // debug, recheck data adding
+//            if (checkedNodeList.size() > 0) {
+//                data = mLineChartHumidity.getData();
+//                Log.d(TAG, "After first the new entries added:");
+//                Log.d(TAG, "data.getXValCount() = " + data.getXValCount());
+//                Log.d(TAG, "data.getYValCount() = " + data.getYValCount());
+//                Log.d(TAG, "data.getDataSets().size()= " + data.getDataSets().size());
+//                for (int i = 0; i < data.getDataSets().size(); i++) {
+//                    for (int j = 0; j < data.getDataSetByIndex(i).getEntryCount(); j++) {
+//                        Log.d(TAG, "data.getDataSetByIndex(i).getEntriesForXIndex(j)= " + data.getDataSetByIndex(i).getEntriesForXIndex(j));
+//                    }
+//                }
+//            }
+            }
+
+            humidityData.clear(); // to keep getHighestVisibleXIndex updated so that 11 xValues are displayed
+        }
+
+    }
+    //////////////////
+
+    private synchronized void handleGraphUpdates(LineChart lineChart) {
+        final LineData lineData = lineChart.getData();
+
+        if ((lineData.getXVals().size() > MAX_VISISBLE_GRAPH_ENTRIES) & !checkedNodeList.isEmpty()) {
+            for (int i = 0; i < lineData.getDataSetCount(); i++) {
+                ILineDataSet set = lineData.getDataSetByIndex(0);
+                if (set != null) {
+                    if (set.removeFirst()) {
+                        lineData.removeXValue(0);
+                        final List xValues = lineData.getXVals();
+                        for (int j = 0; j < xValues.size(); j++) {
+                            Entry entry = set.getEntryForIndex(j);
+                            if (entry != null) {
+                                entry.setXIndex(j);
+                                entry.setVal(entry.getVal());
+                            }
+                        }
+                        lineData.notifyDataChanged();
+                    }
+                }
+            }
+
         }
     }
 
@@ -481,10 +880,10 @@ public class AnalyticsFragment extends Fragment {
         }
     }
 
-    class TemperatureChartValueFormatter implements ValueFormatter {
+    class ChartXValueFormatter implements ValueFormatter {
         private DecimalFormat mFormat;
 
-        TemperatureChartValueFormatter() {
+        ChartXValueFormatter() {
             mFormat = new DecimalFormat("##,##,#0.00");
         }
 
@@ -493,187 +892,6 @@ public class AnalyticsFragment extends Fragment {
             return mFormat.format(value);
         }
     }
-//// end of temperature plot
-
-    private void preparePressureGraph() {
-        mLineChartPressure.setDescription(getString(R.string.time));
-        mLineChartPressure.setTouchEnabled(true);
-        mLineChartPressure.setVisibleXRangeMinimum(5);
-        // enable scaling and dragging
-        mLineChartPressure.setDragEnabled(true);
-        mLineChartPressure.setPinchZoom(true);
-        mLineChartPressure.setScaleEnabled(true);
-        mLineChartPressure.setAutoScaleMinMaxEnabled(true);
-        mLineChartPressure.setDrawGridBackground(false);
-        mLineChartPressure.setBackgroundColor(Color.WHITE);
-        /*final ChartMarker marker = new ChartMarker(getActivity(), R.layout.marker_layout_pressure);
-        mLineChartPressure.setMarkerView(marker);*/
-
-        LineData data = new LineData();
-        data.setValueFormatter(new TemperatureChartValueFormatter());
-        data.setValueTextColor(Color.WHITE);
-        mLineChartPressure.setData(data);
-
-        Legend legend = mLineChartPressure.getLegend();
-        legend.setForm(Legend.LegendForm.LINE);
-        legend.setTextColor(Color.BLACK);
-
-        XAxis xAxis = mLineChartPressure.getXAxis();
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setTextColor(Color.BLACK);
-        xAxis.setDrawGridLines(false);
-        xAxis.setAvoidFirstLastClipping(true);
-
-        YAxis leftAxis = mLineChartPressure.getAxisLeft();
-        leftAxis.setTextColor(Color.BLACK);
-        leftAxis.setValueFormatter(new PressureChartYValueFormatter());
-        leftAxis.setDrawLabels(true);
-        leftAxis.setAxisMinValue(700f);
-        leftAxis.setAxisMaxValue(1100f);
-        leftAxis.setLabelCount(10, false); //
-        YAxis rightAxis = mLineChartPressure.getAxisRight();
-        rightAxis.setEnabled(false);
-    }
-
-    private void prepareHumidityGraph() {
-        mLineChartHumidity.setDescription(getString(R.string.time));
-        mLineChartHumidity.setTouchEnabled(true);
-        mLineChartHumidity.setVisibleXRangeMinimum(5);
-        // enable scaling and dragging
-        mLineChartHumidity.setDragEnabled(true);
-        mLineChartHumidity.setPinchZoom(true);
-        mLineChartHumidity.setScaleEnabled(true);
-        mLineChartHumidity.setAutoScaleMinMaxEnabled(true);
-        mLineChartHumidity.setDrawGridBackground(false);
-        mLineChartHumidity.setBackgroundColor(Color.WHITE);
-        /*final ChartMarker marker = new ChartMarker(getActivity(), R.layout.marker_layout_pressure);
-        mLineChartHumidity.setMarkerView(marker);*/
-
-        final LineData data = new LineData();
-        data.setValueFormatter(new TemperatureChartValueFormatter());
-        data.setValueTextColor(Color.WHITE);
-        mLineChartHumidity.setData(data);
-
-        Legend legend = mLineChartHumidity.getLegend();
-        legend.setForm(Legend.LegendForm.LINE);
-        legend.setTextColor(Color.BLACK);
-
-        XAxis xAxis = mLineChartHumidity.getXAxis();
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setTextColor(Color.BLACK);
-        xAxis.setDrawGridLines(false);
-        xAxis.setAvoidFirstLastClipping(true);
-
-        YAxis leftAxis = mLineChartHumidity.getAxisLeft();
-        leftAxis.setTextColor(Color.BLACK);
-        leftAxis.setValueFormatter(new PressureChartYValueFormatter());
-        leftAxis.setDrawLabels(true);
-        leftAxis.setAxisMinValue(0f);
-        leftAxis.setAxisMaxValue(100f);
-        leftAxis.setLabelCount(6, false); //
-        YAxis rightAxis = mLineChartHumidity.getAxisRight();
-        rightAxis.setEnabled(false);
-    }
-
-
-    private LineDataSet createPressureDataSet() {
-        LineDataSet lineDataSet = new LineDataSet(null, getString(R.string.pressure_graph));
-        lineDataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
-        lineDataSet.setColor(ContextCompat.getColor(requireContext(), R.color.red));
-        lineDataSet.setFillColor(ContextCompat.getColor(requireContext(), R.color.accent));
-        lineDataSet.setHighLightColor(ContextCompat.getColor(requireContext(), R.color.accent));
-        lineDataSet.setValueFormatter(new TemperatureChartValueFormatter());
-        lineDataSet.setDrawValues(true);
-        lineDataSet.setDrawCircles(true);
-        lineDataSet.setDrawCircleHole(false);
-        lineDataSet.setValueTextSize(Utils.CHART_VALUE_TEXT_SIZE);
-        lineDataSet.setLineWidth(Utils.CHART_LINE_WIDTH);
-        return lineDataSet;
-    }
-
-    private LineDataSet createHumidityDataSet() {
-        final LineDataSet lineDataSet = new LineDataSet(null, getString(R.string.humidity_graph));
-        lineDataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
-        lineDataSet.setColor(ContextCompat.getColor(requireContext(), R.color.red));
-        lineDataSet.setFillColor(ContextCompat.getColor(requireContext(), R.color.accent));
-        lineDataSet.setHighLightColor(ContextCompat.getColor(requireContext(), R.color.accent));
-        lineDataSet.setValueFormatter(new HumidityChartValueFormatter());
-        lineDataSet.setDrawValues(true);
-        lineDataSet.setDrawCircles(true);
-        lineDataSet.setDrawCircleHole(false);
-        lineDataSet.setValueTextSize(Utils.CHART_VALUE_TEXT_SIZE);
-        lineDataSet.setLineWidth(Utils.CHART_LINE_WIDTH);
-        return lineDataSet;
-    }
-
-
-
-    private void addPressureEntry(final String timestamp, float pressureValue) {
-        final LineData data = mLineChartPressure.getData();
-
-        if (data != null) {
-            ILineDataSet set = data.getDataSetByIndex(0);
-            if (set == null) {
-                set = createPressureDataSet();
-                data.addDataSet(set);
-            }
-
-            data.addXValue(timestamp);
-            data.addEntry(new Entry(pressureValue, set.getEntryCount()), 0);
-
-            if (pressureValue < 700 && pressureValue > 600 && mLineChartPressure.getAxisLeft().getAxisMinimum() > 600) {
-                mLineChartPressure.getAxisLeft().setAxisMinValue(600);
-                mLineChartPressure.getAxisLeft().setZeroLineColor(ContextCompat.getColor(requireContext(), R.color.nordicBlue));
-            } else if (pressureValue < 600 && pressureValue > 500 && mLineChartPressure.getAxisLeft().getAxisMinimum() > 500) {
-                mLineChartPressure.getAxisLeft().setAxisMinValue(500);
-            }
-
-            mLineChartPressure.notifyDataSetChanged();
-            mLineChartPressure.setVisibleXRangeMaximum(10);
-
-            if (data.getXValCount() >= 10) {
-                final int highestVisibleIndex = mLineChartPressure.getHighestVisibleXIndex();
-                if ((data.getXValCount() - 10) < highestVisibleIndex) {
-                    mLineChartPressure.moveViewToX(data.getXValCount() - 11);
-                } else {
-                    mLineChartPressure.invalidate();
-                }
-            } else {
-                mLineChartPressure.invalidate();
-            }
-        }
-    }
-
-    private void addHumidityEntry(final String timestamp, float humidityValue) {
-        final LineData data = mLineChartHumidity.getData();
-
-        if (data != null) {
-            ILineDataSet set = data.getDataSetByIndex(0);
-            if (set == null) {
-                set = createHumidityDataSet();
-                data.addDataSet(set);
-            }
-
-            data.addXValue(timestamp);
-            data.addEntry(new Entry(humidityValue, set.getEntryCount()), 0);
-
-            mLineChartHumidity.notifyDataSetChanged();
-            mLineChartHumidity.setVisibleXRangeMaximum(10);
-
-            if (data.getXValCount() >= 10) {
-                final int highestVisibleIndex = mLineChartHumidity.getHighestVisibleXIndex();
-                if ((data.getXValCount() - 10) < highestVisibleIndex) {
-                    mLineChartHumidity.moveViewToX(data.getXValCount() - 11);
-                } else {
-                    mLineChartHumidity.invalidate();
-                }
-            } else {
-                mLineChartHumidity.invalidate();
-            }
-        }
-    }
-
-
 
     class PressureChartYValueFormatter implements YAxisValueFormatter {
         private DecimalFormat mFormat;

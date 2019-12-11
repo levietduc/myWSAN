@@ -283,6 +283,58 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         return nodeTemperature;
     }
 
+    // retrieve only pressures from one node in the database
+    public LinkedHashMap<String, String> getNodePressures(int connHandle, int limit) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_NAME, // a. table
+                COLUMNS, // b. column names
+                " connHandle = ?", // c. selections
+                new String[]{String.valueOf(connHandle)}, // d. selections args
+                null, // e. group by
+                null, // f. having
+                "id DESC", // g. order by
+                String.valueOf(limit)); // h. limit
 
+        LinkedHashMap<String, String> nodePressure = new LinkedHashMap<>();
+        if (cursor != null) {
+            if (cursor.moveToLast()) {
+                do {
+                    final String mTimestamp = cursor.getString(cursor.getColumnCount() - 1); // timestamp is stored at the last column
+                    nodePressure.put(mTimestamp, cursor.getString(8));
+                } while (cursor.moveToPrevious());
+
+            }
+            cursor.close();
+        }
+
+        return nodePressure;
+    }
+
+    // retrieve only humidity from one node in the database
+    public LinkedHashMap<String, String> getNodeHumidity(int connHandle, int limit) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_NAME, // a. table
+                COLUMNS, // b. column names
+                " connHandle = ?", // c. selections
+                new String[]{String.valueOf(connHandle)}, // d. selections args
+                null, // e. group by
+                null, // f. having
+                "id DESC", // g. order by
+                String.valueOf(limit)); // h. limit
+
+        LinkedHashMap<String, String> nodeHumidity = new LinkedHashMap<>();
+        if (cursor != null) {
+            if (cursor.moveToLast()) {
+                do {
+                    final String mTimestamp = cursor.getString(cursor.getColumnCount() - 1); // timestamp is stored at the last column
+                    nodeHumidity.put(mTimestamp, cursor.getString(9));
+                } while (cursor.moveToPrevious());
+
+            }
+            cursor.close();
+        }
+
+        return nodeHumidity;
+    }
 
 }

@@ -305,11 +305,16 @@ public class NodeLinkManager {
             newMeasurement.setClusterID(connHandle >> 8 & 0x00FF);
             newMeasurement.setNodeID(connHandle & 0x00FF);
             newMeasurement.setHopcount((int) data[0]);
-//            newMeasurement.setTemperature(data[1] << 8 | data[2]);
+
             // add a random temperature value to debug chart plots
-            newMeasurement.setTemperature(new Random().nextInt(((4000 - 1000) + 1)));
-            newMeasurement.setPressure(data[3] << 8 | data[4]);
-            newMeasurement.setHumidity(data[5] << 8 | data[6]);
+            newMeasurement.setTemperature(new Random().nextInt((4000 - 1000) + 1) + 1000);
+//            newMeasurement.setTemperature(data[1] << 8 | data[2]);
+            // add a random pressure value to debug chart plots
+            newMeasurement.setPressure(new Random().nextInt((1100 - 720) + 1) + 720);
+//            newMeasurement.setPressure(data[3] << 8 | data[4]);
+            // add a random humidity value to debug chart plots
+            newMeasurement.setHumidity(new Random().nextInt((90 - 20) + 1) + 20);
+//            newMeasurement.setHumidity(data[5] << 8 | data[6]);
             newMeasurement.setBtnState((int) data[7]);
             newMeasurement.setLatitude(updatedNode.getLatitude());
             newMeasurement.setLongitude(updatedNode.getLongitude());
