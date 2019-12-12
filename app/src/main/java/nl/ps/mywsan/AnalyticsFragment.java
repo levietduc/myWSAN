@@ -78,56 +78,51 @@ public class AnalyticsFragment extends Fragment {
         viewModel = ViewModelProviders.of(this.getActivity()).get(deviceViewModel.class);
 
         viewModel.getSelectedDevices().observe(this, checkedNodes -> {
-            Log.d(TAG, "current number of checked nodes: " + checkedNodeList.size());
-            // TEMPERATURE UPDATE ///////////////////////////////
-            for (int i = 0; i < checkedNodeList.size(); i++) {
+            Log.d(TAG, "Before clear datasets and entries:");
+            Log.d(TAG, "getSelectedDevices().observe::mLineChartTemperature.getData().getDataSets()" + mLineChartTemperature.getData().getDataSets());
+            Log.d(TAG, "getSelectedDevices().observe::mLineChartPressure.getData().getDataSets()" + mLineChartPressure.getData().getDataSets());
+            Log.d(TAG, "getSelectedDevices().observe::mLineChartHumidity.getData().getDataSets()" + mLineChartHumidity.getData().getDataSets());
+            boolean isDataSetRemoved = false;
+            // CLEAR TEMPERATURE DATASETS and ENTRIES///////////////////////////////
+            for (int i = 0; i < mLineChartTemperature.getData().getDataSetCount(); i++) {
                 // always remove the first one, index=0, as after removing one dataset, the other datasets will be shifted
-                Boolean isDataSetRemoved = mLineChartTemperature.getData().removeDataSet(0);
+                isDataSetRemoved = mLineChartTemperature.getData().removeDataSet(0);
                 Log.d(TAG, "mLineChartTemperature.getData().removeDataSet(" + i + ") = " + isDataSetRemoved);
                 // must notify the chart
                 mLineChartTemperature.notifyDataSetChanged();
                 mLineChartTemperature.invalidate(); // refresh the chart
             }
-            Log.d(TAG, "getSelectedDevices().observe::mLineChartTemperature.getData().getDataSets()" + mLineChartTemperature.getData().getDataSets());
-            // Reset the graph
-            Log.d(TAG, "preparing for a new set checked nodes of " + checkedNodes.size());
-            checkedNodeList = checkedNodes;
-            Log.d(TAG, "... getSelectedDevices =" + checkedNodeList.size());
-            prepareTemperatureMultiLines();
-            Log.d(TAG, "getSelectedDevices().observe::mLineChartTemperature.getData().getDataSets()" + mLineChartTemperature.getData().getDataSets());
-            // PRESSURE UPDATE ///////////////////////////////
-            for (int i = 0; i < checkedNodeList.size(); i++) {
+            // CLEAR PRESSURE DATASETS and ENTRIES///////////////////////////////
+            for (int i = 0; i < mLineChartPressure.getData().getDataSetCount(); i++) {
                 // always remove the first one, index=0, as after removing one dataset, the other datasets will be shifted
-                Boolean isDataSetRemoved = mLineChartPressure.getData().removeDataSet(0);
+                isDataSetRemoved = mLineChartPressure.getData().removeDataSet(0);
                 Log.d(TAG, "mLineChartPressure.getData().removeDataSet(" + i + ") = " + isDataSetRemoved);
                 // must notify the chart
                 mLineChartPressure.notifyDataSetChanged();
                 mLineChartPressure.invalidate(); // refresh the chart
             }
-            Log.d(TAG, "getSelectedDevices().observe::mLineChartPressure.getData().getDataSets()" + mLineChartPressure.getData().getDataSets());
-            // Reset the graph
-            Log.d(TAG, "preparing for a new set checked nodes of " + checkedNodes.size());
-            checkedNodeList = checkedNodes;
-            Log.d(TAG, "... getSelectedDevices =" + checkedNodeList.size());
-            preparePressureMultiLines();
-            Log.d(TAG, "getSelectedDevices().observe::mLineChartPressure.getData().getDataSets()" + mLineChartPressure.getData().getDataSets());
-
-            // HUMIDITY UPDATE ///////////////////////////////
-            for (int i = 0; i < checkedNodeList.size(); i++) {
+            // CLEAR PRESSURE DATASETS and ENTRIES///////////////////////////////
+            for (int i = 0; i < mLineChartHumidity.getData().getDataSetCount(); i++) {
                 // always remove the first one, index=0, as after removing one dataset, the other datasets will be shifted
-                Boolean isDataSetRemoved = mLineChartHumidity.getData().removeDataSet(0);
+                isDataSetRemoved = mLineChartHumidity.getData().removeDataSet(0);
                 Log.d(TAG, "mLineChartHumidity.getData().removeDataSet(" + i + ") = " + isDataSetRemoved);
                 // must notify the chart
                 mLineChartHumidity.notifyDataSetChanged();
                 mLineChartHumidity.invalidate(); // refresh the chart
             }
-            Log.d(TAG, "getSelectedDevices().observe::mLineChartHumidity.getData().getDataSets()" + mLineChartHumidity.getData().getDataSets());
-            // Reset the graph
-            Log.d(TAG, "preparing for a new set checked nodes of " + checkedNodes.size());
             checkedNodeList = checkedNodes;
-            Log.d(TAG, "... getSelectedDevices =" + checkedNodeList.size());
+            Log.d(TAG, "After clean datasets and entries");
+            // Reset the graph
+            Log.d(TAG, "prepareTemperatureMultiLines for a new set checked nodes of " + checkedNodeList.size());
+            prepareTemperatureMultiLines();
+
+            // Reset the graph
+            Log.d(TAG, "preparePressureMultiLines for a new set checked nodes of " + checkedNodeList.size());
+            preparePressureMultiLines();
+
+            // Reset the graph
+            Log.d(TAG, "prepareHumidityMultiLines for a new set checked nodes of " + checkedNodeList.size());
             prepareHumidityMultiLines();
-            Log.d(TAG, "getSelectedDevices().observe::mLineChartHumidity.getData().getDataSets()" + mLineChartHumidity.getData().getDataSets());
 
         });
 

@@ -188,6 +188,7 @@ public class AggregationFragment extends Fragment {
             Log.d(TAG, "... getSelectedDevice.address==" + mDevice + ", mserviceValue=" + mService);
             //((TextView) findViewById(R.id.deviceName)).setText(mDevice.getName()+ " - connecting");
 //                    mService.connect(mDevice.getAddress());
+            mStatusText.setText("Selected Sink: " + mDevice.getName() + ", MAC = " + mDevice.getAddress());
 
 //                    mConProgDialog.show();
         });
@@ -233,6 +234,9 @@ public class AggregationFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.aggregationlayout, viewGroup, false);
 
+        mStatusText = view.findViewById(R.id.textViewStatus);
+
+
 //        deviceInfo = view.findViewById(R.id.deviceAddress);
 //        deviceType = view.findViewById(R.id.deviceType);
 //        mBleDeviceListView = view.findViewById(R.id.listViewBleDevice);
@@ -264,7 +268,6 @@ public class AggregationFragment extends Fragment {
             }
         });
 
-        mStatusText = view.findViewById(R.id.textViewStatus);
 
         btnConnectDisconnect = view.findViewById(R.id.btn_connect);
         btnConnectDisconnect.setOnClickListener(new View.OnClickListener() {
@@ -283,7 +286,7 @@ public class AggregationFragment extends Fragment {
                     Log.i(TAG, "onClick - BT not enabled yet");
                 } else {
                     if (btnConnectDisconnect.getText().equals("Connect")) {
-                        Log.d(TAG, "... btnConnectDisconnect.address==" + mDevice + "mserviceValue" + mService);
+                        Log.d(TAG, "... btnConnectDisconnect.address==" + mDevice + "mServiceValue" + mService);
                         if (mService != null) {
                             mService.connect(mDevice.getAddress());
 
