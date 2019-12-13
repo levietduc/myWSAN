@@ -312,7 +312,7 @@ public class NodeLinkManager {
             // add a random pressure value to debug chart plots
             newMeasurement.setPressure(new Random().nextInt((1100 - 720) + 1) + 720);
 //            newMeasurement.setPressure(data[3] << 8 | data[4]);
-            // add a random humidity value to debug chart plots
+//             add a random humidity value to debug chart plots
             newMeasurement.setHumidity(new Random().nextInt((90 - 20) + 1) + 20);
 //            newMeasurement.setHumidity(data[5] << 8 | data[6]);
             newMeasurement.setBtnState((int) data[7]);

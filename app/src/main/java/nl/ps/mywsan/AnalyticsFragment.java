@@ -306,8 +306,8 @@ public class AnalyticsFragment extends Fragment {
         YAxis rightAxis = mLineChartTemperature.getAxisRight();
         rightAxis.setEnabled(false);
 
-        mLineChartTemperature.invalidate(); // refresh
-        mLineChartTemperature.moveViewToX(data.getXValCount() - 11);
+//        mLineChartTemperature.invalidate(); // refresh
+//        mLineChartTemperature.moveViewToX(data.getXValCount() - 11);
 
         if (checkedNodeList.size() > 0) {
             data = mLineChartTemperature.getData();
@@ -373,6 +373,8 @@ public class AnalyticsFragment extends Fragment {
 
             mLineChartTemperature.notifyDataSetChanged();
             mLineChartTemperature.setVisibleXRangeMaximum(10);
+                mLineChartTemperature.setVisibleXRangeMinimum(10);
+                mLineChartTemperature.resetViewPortOffsets();
 
                 Log.d(TAG, "data.getXValCount() = " + data.getXValCount());
                 Log.d(TAG, "mLineChartTemperature.getHighestVisibleXIndex() = " + mLineChartTemperature.getHighestVisibleXIndex());
@@ -590,6 +592,8 @@ public class AnalyticsFragment extends Fragment {
 
                 mLineChartPressure.notifyDataSetChanged();
                 mLineChartPressure.setVisibleXRangeMaximum(10);
+                mLineChartPressure.setVisibleXRangeMinimum(10);
+                mLineChartPressure.resetViewPortOffsets();
 
                 Log.d(TAG, "data.getXValCount() = " + data.getXValCount());
                 Log.d(TAG, "mLineChartPressure.getHighestVisibleXIndex() = " + mLineChartPressure.getHighestVisibleXIndex());
@@ -799,6 +803,8 @@ public class AnalyticsFragment extends Fragment {
 
                 mLineChartHumidity.notifyDataSetChanged();
                 mLineChartHumidity.setVisibleXRangeMaximum(10);
+                mLineChartHumidity.setVisibleXRangeMinimum(10);
+                mLineChartHumidity.resetViewPortOffsets();
 
                 Log.d(TAG, "data.getXValCount() = " + data.getXValCount());
                 Log.d(TAG, "mLineChartHumidity.getHighestVisibleXIndex() = " + mLineChartHumidity.getHighestVisibleXIndex());
