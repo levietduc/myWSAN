@@ -173,7 +173,6 @@ public class AnalyticsFragment extends Fragment {
                                 @Override
                                 public void run() {
 //
-//                                    checkedNodeList = mNodeLinkManager.getCheckedNodeList();
                                     handleGraphUpdates(mLineChartTemperature);
                                     updateTemperatureValuesMultiLines();
 

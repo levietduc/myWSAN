@@ -256,10 +256,10 @@ public class NodeLinkManager {
         }
         newNode.setName(deviceName);
         newNode.setHopcount((int) nodeData[2]);
-        newNode.setTemperature(nodeData[3] << 8 | nodeData[4]);
-        newNode.setPressure(nodeData[5] << 8 | nodeData[6]);
-        newNode.setHumidity(nodeData[7] << 8 | nodeData[8]);
-        newNode.setBtnState((int) nodeData[9]);
+        newNode.setTemperature((nodeData[3] << 8) | (nodeData[4] & 0x00FF));
+        newNode.setPressure(nodeData[5] << 24 | nodeData[6] << 16 & 0x00FF0000 | nodeData[7] << 8 & 0x0000FF00 | nodeData[8] & 0x00FF);
+        newNode.setHumidity(nodeData[9] << 8 | nodeData[10]);
+        newNode.setBtnState((int) nodeData[11]);
         newNode.setTimestamp(timestamp);
         newNode.setAlive(60);
 
