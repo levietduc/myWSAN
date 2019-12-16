@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Random;
 
 /**
  * Created by Le Viet Duc on 26-November-2019
@@ -150,6 +149,14 @@ public class NodeLinkManager {
         return mNodeListViewAdapter;
     }
 
+    public ArrayList<Node> getNodeList() {
+        ArrayList<Node> nodeList = new ArrayList<>();
+        for (int i = 0; i < mNodeListViewAdapter.getCount(); i++) {
+            nodeList.add(i, (Node) mNodeListViewAdapter.getItem(i));
+        }
+        return nodeList;
+    }
+
     // get list of checked nodes
     public ArrayList<Node> getCheckedNodeList() {
         ArrayList<Node> checkedNodeList = new ArrayList<>();
@@ -239,10 +246,10 @@ public class NodeLinkManager {
             newMeasurement.setClusterID(connHandle >> 8 & 0x00FF);
             newMeasurement.setNodeID(connHandle & 0x00FF);
             newMeasurement.setHopcount((int) nodeData[2]);
-            newMeasurement.setTemperature(nodeData[3] << 8 | nodeData[4]);
-            newMeasurement.setPressure(nodeData[5] << 8 | nodeData[6]);
-            newMeasurement.setHumidity(nodeData[7] << 8 | nodeData[8]);
-            newMeasurement.setBtnState((int) nodeData[9]);
+            newMeasurement.setTemperature((nodeData[3] << 8) | (nodeData[4] & 0x00FF));
+            newMeasurement.setPressure(nodeData[5] << 24 | nodeData[6] << 16 & 0x00FF0000 | nodeData[7] << 8 & 0x0000FF00 | nodeData[8] & 0x00FF);
+            newMeasurement.setHumidity(nodeData[9] << 8 | nodeData[10]);
+            newMeasurement.setBtnState((int) nodeData[11]);
             newMeasurement.setLatitude(0);
             newMeasurement.setLongitude(0);
             newMeasurement.setTimestamp(timestamp);
@@ -254,6 +261,7 @@ public class NodeLinkManager {
         newNode.setHumidity(nodeData[7] << 8 | nodeData[8]);
         newNode.setBtnState((int) nodeData[9]);
         newNode.setTimestamp(timestamp);
+        newNode.setAlive(60);
 
 
         if (addNewNode) {
@@ -288,14 +296,15 @@ public class NodeLinkManager {
         Measurement newMeasurement = null;
         if (updatedNode != null && data.length >= 1) {
             updatedNode.setHopcount((int) data[0]);
-            updatedNode.setTemperature(data[1] << 8 | data[2]);
-            updatedNode.setPressure(data[3] << 8 | data[4]);
+            updatedNode.setTemperature((data[1] << 8) | (data[2] & 0x00FF));
+            updatedNode.setPressure(data[3] << 24 | data[4] << 16 & 0x00FF0000 | data[5] << 8 & 0x0000FF00 | data[6] & 0x00FF);
             // when pressing the button on a thingy, data length is only 7 (data[0..6]) -> get a bug from here.
-            updatedNode.setHumidity(data[5] << 8 | data[6]);
-            updatedNode.setBtnState((int) data[7]);
+            updatedNode.setHumidity(data[7] << 8 | data[8]);
+            updatedNode.setBtnState((int) data[9]);
 //            String timestamp = new SimpleDateFormat("HH:mm:ss:SSS", Locale.getDefault()).format(new Date());
             String timestamp = new SimpleDateFormat("yyyyMMdd_HH:mm:ss:SSS", Locale.getDefault()).format(new Date());
             updatedNode.setTimestamp(timestamp);
+            updatedNode.setAlive(60); // timeout is 60 seconds
             mNodeListViewAdapter.notifyDataChanged();
 
             // update database = add the update measurement
@@ -307,20 +316,19 @@ public class NodeLinkManager {
             newMeasurement.setHopcount((int) data[0]);
 
             // add a random temperature value to debug chart plots
-            newMeasurement.setTemperature(new Random().nextInt((4000 - 1000) + 1) + 1000);
-//            newMeasurement.setTemperature(data[1] << 8 | data[2]);
+//            newMeasurement.setTemperature(new Random().nextInt((4000 - 1000) + 1) + 1000);
+            newMeasurement.setTemperature((data[1] << 8) | (data[2] & 0x00FF));
             // add a random pressure value to debug chart plots
-            newMeasurement.setPressure(new Random().nextInt((1100 - 720) + 1) + 720);
-//            newMeasurement.setPressure(data[3] << 8 | data[4]);
+//            newMeasurement.setPressure(new Random().nextInt((1100 - 720) + 1) + 720);
+            newMeasurement.setPressure(data[3] << 24 | data[4] << 16 & 0x00FF0000 | data[5] << 8 & 0x0000FF00 | data[6] & 0x00FF);
 //             add a random humidity value to debug chart plots
-            newMeasurement.setHumidity(new Random().nextInt((90 - 20) + 1) + 20);
-//            newMeasurement.setHumidity(data[5] << 8 | data[6]);
-            newMeasurement.setBtnState((int) data[7]);
+//            newMeasurement.setHumidity(new Random().nextInt((90 - 20) + 1) + 20);
+            newMeasurement.setHumidity(data[7] << 8 | data[8]);
+            newMeasurement.setBtnState((int) data[9]);
             newMeasurement.setLatitude(updatedNode.getLatitude());
             newMeasurement.setLongitude(updatedNode.getLongitude());
             newMeasurement.setTimestamp(timestamp);
             db.addMeasurement(newMeasurement);
-
         }
     }
 
@@ -416,6 +424,7 @@ public class NodeLinkManager {
             }
             return null;
         }
+
 
         public void notifyDataChanged() {
             notifyDataSetChanged();

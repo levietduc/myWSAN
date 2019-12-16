@@ -215,6 +215,7 @@ public class AggregationFragment extends Fragment {
                         + " Selected Devices: " + mNodeLinkManager.getCheckedNodeList().size());
             }
         });
+
     }
 
 
@@ -289,7 +290,6 @@ public class AggregationFragment extends Fragment {
                         Log.d(TAG, "... btnConnectDisconnect.address==" + mDevice + "mServiceValue" + mService);
                         if (mService != null) {
                             mService.connect(mDevice.getAddress());
-
                             mConProgDialog.show();
                         }
                     } else {
@@ -305,6 +305,47 @@ public class AggregationFragment extends Fragment {
                 }
             }
         });
+
+        // use a timer to update graph and node list
+        Thread timeout = new Thread() {
+
+            @Override
+            public void run() {
+                try {
+                    while (!isInterrupted()) {
+                        Thread.sleep(1000);
+                        if (getActivity() != null) {
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    // check if the nodes are still alive
+                                    for (Node node : mNodeLinkManager.getNodeList()) {
+                                        // countdown
+                                        {
+                                            if (node.isAlive() - 1 > 0) {
+                                                Log.d(TAG, "counting down node " + node.getConnHandle() + " = " + node.isAlive());
+                                                node.setAlive(node.isAlive() - 1);
+                                            } else {
+                                                // the node is likely dead, let's remove it
+                                                Log.d(TAG, "timeout, removing node " + node.getConnHandle());
+                                                mNodeLinkManager.removeNode(node.getConnHandle());
+                                                mNodeLinkManager.getListAdapter().notifyDataSetChanged();
+                                                // update the checked list to graph
+                                                viewModel.selectDevices(mNodeLinkManager.getCheckedNodeList());
+                                            }
+                                        }
+                                    }
+                                    Log.d(TAG, "timeout, checkedNodeList updated = " + mNodeLinkManager.getCheckedNodeList().size());
+                                }
+                            });
+                        }
+                    }
+                } catch (InterruptedException e) {
+                }
+            }
+        };
+
+        timeout.start();
 
 //        service_init();
         return view;
@@ -324,6 +365,7 @@ public class AggregationFragment extends Fragment {
         getActivity().unbindService(mServiceConnection);
         mService.stopSelf();
         mService = null;
+        mConProgDialog.dismiss(); // prevent leaked
 
     }
 

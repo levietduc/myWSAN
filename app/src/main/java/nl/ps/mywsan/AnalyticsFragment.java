@@ -133,6 +133,7 @@ public class AnalyticsFragment extends Fragment {
             }
         });
 
+
     }
 
     public void displayDetails(Node node) {
@@ -172,6 +173,7 @@ public class AnalyticsFragment extends Fragment {
                                 @Override
                                 public void run() {
 //
+//                                    checkedNodeList = mNodeLinkManager.getCheckedNodeList();
                                     handleGraphUpdates(mLineChartTemperature);
                                     updateTemperatureValuesMultiLines();
 
@@ -190,6 +192,8 @@ public class AnalyticsFragment extends Fragment {
         };
 
         t.start();
+
+//
 
         return rootView;
     }
@@ -440,7 +444,7 @@ public class AnalyticsFragment extends Fragment {
             Node plottingNode = checkedNodeList.get(i);
             pressureData = db.getNodePressures(plottingNode.getConnHandle(), 2);
             String timestamp_i = pressureData.keySet().toArray()[pressureData.size() - 1].toString();
-            final int pressureValue = Integer.parseInt(pressureData.get(timestamp_i));
+            final float pressureValue = Float.parseFloat(pressureData.get(timestamp_i)) / 100f;
 //            final float temperature = (new Random().nextInt((4000 - 1000) + 1) + 0) / 100f;
             final Entry cie = new Entry(pressureValue, 0); // 0 == quarter 1
             valsCompi.add(cie);
@@ -573,7 +577,7 @@ public class AnalyticsFragment extends Fragment {
                     Node plottingNode = checkedNodeList.get(i);
                     pressureData = db.getNodePressures(plottingNode.getConnHandle(), 2);
                     String timestamp_i = pressureData.keySet().toArray()[pressureData.size() - 1].toString();
-                    final int pressureValue = Integer.parseInt(pressureData.get(timestamp_i));
+                    final float pressureValue = Float.parseFloat(pressureData.get(timestamp_i)) / 100f;
                     // debug with random temperature values
 //                final float temperature = (new Random().nextInt(((4000 - 1000) + 1)) / 100f;
                     final Entry cie = new Entry(pressureValue, data.getXValCount()); // 0 == quarter 1

@@ -57,7 +57,7 @@
             android:layout_marginTop="@dimen/cardview_vertical_padding"
             android:layout_marginRight="@dimen/cardview_horizontal_padding">
 
-            <LinearLayout
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
@@ -68,15 +68,25 @@
                     android:background="@color/onBackground" />
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/data_export"
+                    style="?buttonBarButtonStyle"
+                    android:layout_width="110dp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_marginLeft="40dp"
+                    android:text="EXPORT"
+                    app:backgroundTint="#00BCD4" />
+
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/weather_settings"
                     style="?buttonBarButtonStyle"
-                    android:layout_width="wrap_content"
+                    android:layout_width="110dp"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="end"
-                    android:layout_marginEnd="16dp"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginRight="40dp"
                     android:text="SETTINGS"
                     app:backgroundTint="#00BCD4" />
-            </LinearLayout>
+            </RelativeLayout>
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView

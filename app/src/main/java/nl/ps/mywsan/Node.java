@@ -24,6 +24,8 @@ public class Node {
     private int clusterID;
     private int localNodeID;
 
+    private int isAlive;
+
     public Node() {
         Checked = false;
         name = "Noname";
@@ -34,6 +36,7 @@ public class Node {
         btnState = 0;
         latitude = 0;
         longitude = 0;
+        isAlive = 0;
     }
 
     public Node(int connHandle, int type) {
@@ -146,6 +149,13 @@ public class Node {
         this.timestamp = timestamp;
     }
 
+    public void setAlive(int alive) {
+        isAlive = alive;
+    }
+
+    public int isAlive() {
+        return isAlive;
+    }
 
     @Override
     public String toString() {
